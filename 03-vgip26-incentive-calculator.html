@@ -1,0 +1,2006 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VGIP 2026 Incentive Calculator — Excel Logic</title>
+<style>
+  :root {
+    --font-serif: 'Times New Roman', Times, serif;
+    --font-sans: 'Times New Roman', Times, serif;
+    --navy: #14213d;
+    --navy-deep: #0d1730;
+    --teal: #1a6b5a;
+    --teal-bright: #20a87e;
+    --mint: #7fd9b8;
+    --mint-light: #cdf2e3;
+    --ink: #0f1c2e;
+    --paper: #f4f9f6;
+    --gold: #20a87e;
+    --gold-light: #7fd9b8;
+    --gold-pale: rgba(32,168,126,0.08);
+    --muted: #5a6b6a;
+    --border: #d4e8e0;
+    --border-soft: #e6f1ec;
+    --card: #ffffff;
+    --shadow: 0 1px 2px rgba(20,33,61,0.04), 0 10px 34px -12px rgba(20,33,61,0.16);
+    --shadow-lift: 0 2px 6px rgba(20,33,61,0.06), 0 22px 52px -18px rgba(20,33,61,0.26);
+    --ring: 0 0 0 3px rgba(32,168,126,0.18);
+    --grad-main: linear-gradient(135deg, var(--navy-deep) 0%, var(--navy) 35%, var(--teal) 75%, var(--teal-bright) 100%);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: var(--font-sans);
+    font-size: 16px;
+    background: linear-gradient(180deg, #eef7f3 0%, var(--paper) 100%);
+    background-attachment: fixed;
+    color: var(--ink);
+    min-height: 100vh;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+  body::before {
+    content: '';
+    position: fixed; top: 0; left: 0; right: 0; height: 4px; z-index: 500;
+    background: linear-gradient(90deg, var(--navy-deep) 0%, var(--teal) 55%, var(--teal-bright) 100%);
+  }
+  .header { background: var(--grad-main); position: relative; overflow: hidden; }
+  .header::after {
+    content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, var(--teal-bright), var(--mint), var(--teal-bright));
+  }
+  .header-inner {
+    max-width: 1300px; margin: 0 auto; padding: 34px 40px 30px;
+    display: flex; align-items: center; justify-content: space-between; position: relative; z-index: 1;
+  }
+  .brand-eyebrow {
+    font-size: 14px; letter-spacing: 4px; text-transform: uppercase; color: var(--gold);
+    margin-bottom: 12px; font-weight: 700;
+  }
+  .header h1 {
+    font-family: var(--font-serif); font-size: 42px; font-weight: 900; color: #fff;
+    line-height: 1.1; letter-spacing: -1px; text-shadow: 0 2px 18px rgba(0,0,0,0.35);
+  }
+  .header-meta { margin-top: 12px; font-size: 15px; letter-spacing: 1.5px; color: #a8c8bd; text-transform: uppercase; font-weight: 600; }
+  .header-logo-label { font-size: 10px; letter-spacing: 2px; color: #a8c8bd; text-transform: uppercase; text-align: right; }
+  .header-logo { flex-shrink: 0; display: flex; flex-direction: column; align-items: center; gap: 6px; margin-right: -12px; }
+  .header-logo img { width: 190px; height: auto; filter: drop-shadow(0 2px 10px rgba(0,0,0,0.45)); }
+  .header-logo-label { text-align: center; }
+  .container { width: 100%; max-width: 1300px; margin: 0 auto; padding: 36px 32px 72px; }
+  .card {
+    background: linear-gradient(180deg, rgba(255,255,255,0.6), rgba(255,255,255,0)), var(--card);
+    border: 1px solid var(--border-soft); border-radius: 10px; padding: 32px 30px 32px 34px;
+    margin-bottom: 30px; box-shadow: var(--shadow); position: relative; overflow: hidden;
+  }
+  .card::before { content: ''; position: absolute; top: 0; left: 0; width: 5px; height: 100%; background: linear-gradient(180deg, var(--navy), var(--teal-bright)); }
+  .card > * { position: relative; z-index: 1; }
+  .step-badge { display: inline-flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+  .step-num {
+    width: 30px; height: 30px; background: var(--grad-main); color: #fff; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; flex-shrink: 0;
+  }
+  .step-label { font-size: 14px; letter-spacing: 3px; text-transform: uppercase; color: var(--gold); font-weight: 700; }
+  .section-title { font-family: var(--font-serif); font-size: 27px; font-weight: 700; color: var(--ink); margin-bottom: 6px; margin-left: 40px; }
+  .section-sub { font-size: 13px; color: var(--muted); margin-bottom: 22px; margin-left: 40px; line-height: 1.5; }
+  .field-group { display: flex; flex-direction: column; gap: 7px; }
+  .field-label { font-size: 12.5px; letter-spacing: 0.5px; text-transform: uppercase; font-weight: 700; color: var(--teal-bright); }
+  .styled-input, .styled-select {
+    background: #f7fbf9; border: 1px solid var(--border); border-radius: 7px; padding: 11px 14px;
+    font-family: var(--font-sans); font-size: 15px; font-weight: 500; color: var(--ink); width: 100%;
+    box-shadow: inset 0 1px 2px rgba(20,33,61,0.04); transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .styled-input:hover, .styled-select:hover { border-color: var(--mint); }
+  .styled-input:focus, .styled-select:focus { outline: none; background: #fff; border-color: var(--teal-bright); box-shadow: var(--ring); }
+  .styled-input.calc { background: var(--gold-pale); border-color: var(--gold-light); font-weight: 700; color: var(--teal); cursor: not-allowed; }
+  .grid { display: grid; gap: 22px; margin-left: 40px; width: calc(100% - 40px); }
+  .styled-select:disabled { background: var(--gold-pale); border-color: var(--gold-light); font-weight: 700; color: var(--teal); cursor: not-allowed; opacity: 1; }
+  .grid-5 { grid-template-columns: repeat(5, 1fr); }
+  .grid-3 { grid-template-columns: repeat(3, 1fr); }
+  .grid-4 { grid-template-columns: repeat(4, 1fr); }
+  .asset-option {
+    display:inline-block;
+    margin-left:6px;
+    font-size:11px;
+    font-weight:700;
+    padding:3px 7px;
+    border-radius:999px;
+    background:#eef7f2;
+    color:#2d6a4f;
+    vertical-align:middle;
+  }
+  .other-name {
+    min-width:150px;
+  }
+  .ei-val[readonly] {
+    background:#f1f1f1;
+    cursor:not-allowed;
+  }
+  .secondary-btn {
+    border:1px solid var(--border);
+    background:#fff;
+    color:var(--primary);
+    border-radius:7px;
+    padding:9px 14px;
+    font-weight:700;
+    cursor:pointer;
+  }
+  .secondary-btn:hover { opacity:.88; }
+
+  .data-table { width: calc(100% - 40px); margin-left: 40px; border-collapse: collapse; }
+  .data-table th {
+    font-size: 10.5px; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); font-weight: 700;
+    padding: 10px; text-align: left; border-bottom: 2px solid var(--border); background: var(--gold-pale);
+  }
+  .data-table td { padding: 8px 10px; font-size: 14px; border-bottom: 1px solid var(--border-soft); vertical-align: middle; }
+  .data-table tr:last-child td { border-bottom: none; }
+  .data-table tr.total-row td { font-weight: 800; font-size: 15px; border-top: 2px solid var(--gold); color: var(--navy); padding-top: 14px; }
+  .data-table input { text-align: right; }
+  .data-table .row-label { font-weight: 600; color: var(--ink); white-space: nowrap; }
+  .footnote { font-size: 11.5px; color: var(--muted); margin: 10px 0 0 40px; font-style: italic; }
+  .btn-generate {
+    display: inline-block; background: var(--grad-main); color: #fff; border: none; padding: 15px 34px;
+    font-family: var(--font-sans); font-size: 12.5px; font-weight: 700; letter-spacing: 2.5px; text-transform: uppercase;
+    cursor: pointer; border-radius: 8px; box-shadow: 0 6px 18px -6px rgba(20,33,61,0.45); margin-right: 14px; margin-top: 6px;
+  }
+  .btn-generate:hover { background: linear-gradient(135deg, var(--navy-deep), var(--teal)); }
+  .btn-secondary {
+    display: inline-block; background: #fff; color: var(--teal-bright); border: 1.5px solid var(--gold-light);
+    padding: 13px 26px; border-radius: 8px; font-family: var(--font-sans); font-size: 12.5px; font-weight: 700;
+    letter-spacing: 2px; text-transform: uppercase; cursor: pointer; margin-right: 14px; margin-top: 6px;
+  }
+  .btn-secondary:hover { border-color: var(--teal-bright); background: var(--gold-pale); }
+  .btn-row { margin-left: 40px; margin-top: 10px; }
+  .pd-menu { position: fixed; z-index: 1200; display: none; background: #fff; border: 1px solid var(--border);
+    border-radius: 10px; box-shadow: var(--shadow-lift); max-height: 300px; overflow-y: auto; padding: 6px; }
+  .pd-menu.open { display: block; }
+  .pd-menu .pd-head { font-size: 11px; letter-spacing: 1.2px; text-transform: uppercase; color: var(--teal); padding: 6px 10px 4px; font-weight: 700; }
+  .pd-menu .pd-item { padding: 9px 10px; font-size: 14px; color: var(--ink); border-radius: 6px; cursor: pointer; line-height: 1.35; }
+  .pd-menu .pd-item:hover, .pd-menu .pd-item.active { background: var(--gold-pale); color: var(--teal); }
+  .pd-menu .pd-item small { display: block; color: var(--muted); font-size: 11.5px; }
+  .modal-overlay {
+    display: none; position: fixed; inset: 0; background: rgba(13,23,48,0.55); z-index: 900;
+    align-items: flex-start; justify-content: center; overflow-y: auto; padding: 40px 20px;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal-box {
+    background: #fff; border-radius: 12px; max-width: 900px; width: 100%; padding: 34px 36px 40px;
+    box-shadow: var(--shadow-lift); position: relative;
+  }
+  .modal-close {
+    position: absolute; top: 18px; right: 22px; background: var(--gold-pale); border: none; color: var(--teal);
+    width: 34px; height: 34px; border-radius: 50%; font-size: 18px; cursor: pointer; font-weight: 700;
+  }
+  .modal-box h2 { font-family: var(--font-serif); color: var(--navy); margin-bottom: 6px; }
+  .modal-sub { font-size: 12.5px; color: var(--muted); margin-bottom: 22px; }
+  .audit-block { margin-bottom: 22px; }
+  .audit-block h3 { font-size: 13px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--gold); margin-bottom: 10px; }
+  .audit-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px dashed var(--border); font-size: 14px; }
+  .audit-row span:first-child { color: var(--muted); }
+  .audit-row span:last-child { font-weight: 700; color: var(--ink); }
+  .badge-note { background: var(--gold-pale); border-left: 4px solid var(--gold); padding: 10px 16px; border-radius: 0 6px 6px 0; font-size: 12.5px; color: var(--teal); margin-top: 10px; }
+  /* ===== PRINT / SAVE PDF — Banthia certificate style (navy bar, green sections, B-logo watermark) ===== */
+  #print-sheet { display: none; }
+  @media print {
+    html, body { background: #fff !important; }
+    body::before { display: none !important; }
+    body > *:not(#print-sheet) { display: none !important; }
+    #print-sheet { display: block !important; }
+  }
+  #print-sheet { position: relative; font-family: 'Times New Roman', Times, serif; color: #14213d; font-size: 10.5pt; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  #print-sheet .ps-wm { position: fixed; top: 50%; left: 50%; width: 120mm; height: auto; transform: translate(-50%,-50%); opacity: 0.24; z-index: 5; pointer-events: none; }
+  #print-sheet .ps-body { position: relative; z-index: 1; }
+  #print-sheet .ps-title { background: #14213d; color: #fff; text-align: center; font-weight: 700; font-size: 17pt; padding: 7px 6px; }
+  #print-sheet .ps-sub { background: #e8f5f0; border: 1px solid #cfe6dd; color: #14213d; font-style: normal; font-weight: 700; text-align: center; padding: 6px 12px; margin: 8px 0 8px; font-size: 10.5pt; }
+  #print-sheet .ps-sub b { color: #1b6b5a; }
+  #print-sheet .ps-by { margin-top: 4px; font-size: 14pt; font-weight: 700; color: #14213d; }
+  #print-sheet .ps-sec { background: #1b6b5a; color: #fff; font-weight: 700; font-size: 11pt; padding: 3px 10px; margin-top: 8px; }
+  #print-sheet table { border-collapse: collapse; width: 100%; background: transparent; }
+  #print-sheet th, #print-sheet td { border: 1px solid #14213d; padding: 1.5px 8px; font-size: 10pt; }
+  #print-sheet th { background: #e8f5f0; font-weight: 700; text-align: center; }
+  #print-sheet td.n { text-align: center; }
+  #print-sheet td.k { background: #f3faf7; font-weight: 700; width: 34%; }
+  #print-sheet td.v { text-align: left; }
+  #print-sheet tr.tot td { background: #e8f5f0; color: #1b6b5a; font-weight: 700; }
+  #print-sheet tr.grand td { background: #1b6b5a; color: #fff; font-weight: 700; }
+  #print-sheet tr.sum td:first-child { background: #f3faf7; font-weight: 700; }
+  #print-sheet .ps-foot { display: flex; justify-content: space-between; margin-top: 8px; font-size: 10pt; }
+  #print-sheet.ps-capture { display: block !important; position: relative; background: #fff; }
+  #print-sheet.ps-capture.ps-portrait { min-height: 1040px; }
+  #print-sheet.ps-capture.ps-landscape { min-height: 705px; }
+  #print-sheet.ps-capture .ps-wm { position: absolute; }
+  #print-sheet table.ps-sum td { font-size: 9.5pt; }
+  #print-sheet table.ps-sum td.k { width: 19%; }
+  #print-sheet table.ps-sum td.v { width: 31%; }
+  #print-sheet table.ps-m th, #print-sheet table.ps-m td { font-size: 7.6pt; padding: 1.5px 3px; text-align: right; }
+  #print-sheet table.ps-m th { text-align: center; }
+  #print-sheet table.ps-m td:first-child { text-align: center; }
+  #print-sheet table.ps-m tr { break-inside: avoid; }
+  #print-sheet table.ps-m tr.moratorium-row td { background: #fdf6e3; }
+  #print-sheet table.ps-m tr.year-end td { font-weight: 700; border-bottom: 1.5px solid #1b6b5a; }
+  #print-sheet table.ps-m tfoot { display: table-row-group; }
+  #print-sheet table.ps-m tfoot td { background: #e8f5f0; color: #1b6b5a; font-weight: 700; }
+  #print-sheet .ps-break { break-before: page; }
+  #print-sheet .ps-note { font-size: 8.5pt; font-style: italic; color: #4a5568; margin-top: 4px; }
+
+  /* ===== INTRO SPLASH SCREEN ===== */
+  #splash {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: var(--grad-main);
+    z-index: 9999; display: flex; align-items: center; justify-content: center;
+    overflow: hidden;
+    animation: splashFadeOut 0.9s cubic-bezier(0.65,0,0.35,1) 5.2s forwards;
+  }
+  #splash::before {
+    content: ''; position: absolute; inset: -10%; z-index: 0; pointer-events: none;
+    background:
+      radial-gradient(640px 640px at 24% 30%, rgba(32,168,126,0.30), transparent 60%),
+      radial-gradient(520px 520px at 80% 74%, rgba(127,217,184,0.18), transparent 60%),
+      radial-gradient(720px 720px at 72% 14%, rgba(20,33,61,0.5), transparent 65%);
+    animation: glowDrift 16s ease-in-out infinite alternate;
+  }
+  #splash::after {
+    content: ''; position: absolute; inset: 0; z-index: 1; pointer-events: none;
+    background:
+      linear-gradient(rgba(255,255,255,0.035) 1px, transparent 1px) 0 0 / 100% 46px,
+      linear-gradient(90deg, rgba(255,255,255,0.035) 1px, transparent 1px) 0 0 / 46px 100%,
+      radial-gradient(120% 120% at 50% 45%, transparent 52%, rgba(0,0,0,0.5) 100%);
+    animation: gridFade 1.2s ease 0.3s both;
+  }
+  #splash .splash-left { position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; padding-left: 40px; }
+  #splash .splash-logo {
+    width: 380px; height: auto; object-fit: contain;
+    border-radius: 16px; padding: 8px;
+    filter: drop-shadow(0 14px 48px rgba(0,0,0,0.55)) drop-shadow(0 0 0 rgba(32,168,126,0));
+    animation: logoReveal 1.1s cubic-bezier(0.22,1,0.36,1) 0.2s both,
+               logoGlow 3.4s ease-in-out 1.3s infinite;
+  }
+  #splash .splash-title {
+    font-size: 48px; font-weight: 900; letter-spacing: 8px; margin-top: 28px;
+    font-family: var(--font-serif);
+    background: linear-gradient(100deg, #ffffff 0%, var(--mint) 28%, var(--teal-bright) 50%, var(--mint) 72%, #ffffff 100%);
+    background-size: 220% auto;
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent; color: transparent;
+    animation: titleReveal 1.1s cubic-bezier(0.22,1,0.36,1) 0.65s both,
+               titleShine 5s ease-in-out 1.7s infinite;
+    text-align: center;
+  }
+  #splash .splash-bar-wrap {
+    position: relative; overflow: hidden;
+    width: 260px; height: 5px; background: rgba(255,255,255,0.14);
+    border-radius: 10px; margin-top: 24px;
+    animation: fadeSlideUp 0.6s cubic-bezier(0.22,1,0.36,1) 1.3s both;
+  }
+  #splash .splash-bar {
+    height: 100%; width: 0%;
+    background: linear-gradient(90deg, var(--teal), var(--teal-bright), var(--mint));
+    border-radius: 10px;
+    box-shadow: 0 0 16px rgba(32,168,126,0.7);
+    animation: loadBar 1.7s cubic-bezier(0.22,1,0.36,1) 1.4s forwards;
+  }
+  #splash .splash-bar-wrap::after {
+    content: ''; position: absolute; top: 0; left: 0; height: 100%; width: 45%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.55), transparent);
+    animation: shimmerSweep 1.6s ease-in-out 1.6s infinite;
+  }
+  #splash .splash-right { position: relative; z-index: 2; flex: 0 0 520px; display: flex; flex-direction: column; justify-content: flex-end; align-items: flex-start; padding: 0 52px 60px 0; }
+  #splash .splash-dept {
+    color: var(--gold); font-size: 38px; font-weight: 700; font-family: var(--font-serif);
+    letter-spacing: 1px; margin-bottom: 22px; line-height: 1.3;
+    border-left: 8px solid var(--gold); padding-left: 24px;
+    animation: fadeSlideUp 0.7s cubic-bezier(0.22,1,0.36,1) 1.05s both;
+  }
+  #splash .splash-company-name {
+    color: #fff; font-size: 40px; font-weight: 900; font-family: var(--font-serif);
+    margin-bottom: 14px; letter-spacing: 0.5px;
+    animation: fadeSlideUp 0.7s cubic-bezier(0.22,1,0.36,1) 1.2s both;
+  }
+  #splash .splash-divider {
+    width: 100%; height: 1px;
+    background: linear-gradient(90deg, var(--teal-bright), rgba(255,255,255,0.25), transparent);
+    margin: 8px 0 12px; transform-origin: left center;
+    animation: drawLine 0.9s cubic-bezier(0.22,1,0.36,1) 1.4s both;
+  }
+  #splash .splash-details {
+    color: rgba(244,250,248,0.92); font-size: 21px; font-family: var(--font-serif);
+    line-height: 2.1; text-align: left;
+    animation: fadeSlideUp 0.8s cubic-bezier(0.22,1,0.36,1) 1.55s both;
+  }
+
+  @keyframes splashFadeOut { to { opacity: 0; transform: scale(1.05); pointer-events: none; visibility: hidden; } }
+  @keyframes logoReveal { from { transform: scale(0.9) translateY(12px); opacity: 0; } to { transform: scale(1) translateY(0); opacity: 1; } }
+  @keyframes logoGlow { 0%, 100% { filter: drop-shadow(0 14px 48px rgba(0,0,0,0.55)) drop-shadow(0 0 18px rgba(32,168,126,0)); } 50% { filter: drop-shadow(0 14px 48px rgba(0,0,0,0.55)) drop-shadow(0 0 42px rgba(32,168,126,0.5)); } }
+  @keyframes titleReveal { from { opacity: 0; transform: translateY(14px); letter-spacing: 22px; } to { opacity: 1; transform: translateY(0); letter-spacing: 8px; } }
+  @keyframes fadeSlideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes loadBar { to { width: 100%; } }
+  @keyframes shimmerSweep { 0% { left: -50%; } 100% { left: 110%; } }
+  @keyframes glowDrift { 0% { transform: translate3d(0,0,0) scale(1); opacity: 0.85; } 100% { transform: translate3d(-3%,2%,0) scale(1.08); opacity: 1; } }
+  @keyframes gridFade { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes titleShine { 0% { background-position: 0% center; } 100% { background-position: 200% center; } }
+  @keyframes drawLine { from { transform: scaleX(0); opacity: 0; } to { transform: scaleX(1); opacity: 1; } }
+
+  /* ===== PANEL ENTRANCE ANIMATIONS ===== */
+  .header { animation: slideInDown 0.6s cubic-bezier(0.22,1,0.36,1) 5.4s both; }
+  .container { animation: fadeSlideUp 0.6s cubic-bezier(0.22,1,0.36,1) 5.6s both; }
+  @keyframes slideInDown { from { transform: translateY(-30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+  /* ===== FLOATING BACKGROUND PARTICLES ===== */
+  .bg-particles { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+  .particle { position: absolute; border-radius: 50%; background: rgba(127,217,184,0.10); animation: floatUp linear infinite; }
+  @keyframes floatUp { 0% { transform: translateY(100vh) scale(0); opacity: 0; } 10% { opacity: 1; } 90% { opacity: 0.5; } 100% { transform: translateY(-10vh) scale(1); opacity: 0; } }
+
+  /* ─── FOOTER ────────────────────── */
+  .site-footer { max-width: 1300px; margin: 8px auto 0; padding: 0 32px 44px; }
+  .footer-inner {
+    background: var(--grad-main); color: #cfe7dd; border-radius: 12px; box-shadow: var(--shadow-lift);
+    padding: 28px 44px; display: flex; justify-content: space-between; gap: 40px; flex-wrap: wrap;
+    position: relative; overflow: hidden;
+  }
+  .footer-inner::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 3px; background: linear-gradient(90deg, var(--teal-bright), var(--mint), var(--teal-bright)); }
+  .footer-name { font-family: var(--font-serif); font-size: 22px; font-weight: 900; color: #fff; }
+  .footer-tag { font-size: 13px; color: var(--mint); margin-top: 8px; letter-spacing: 0.6px; }
+  .footer-col { font-size: 13px; line-height: 1.85; color: #cfe7dd; }
+  .footer-col-title { font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--gold-light); font-weight: 700; margin-bottom: 10px; }
+  .footer-col a { color: #cfe7dd; text-decoration: none; }
+  .footer-col a:hover { color: var(--mint); text-decoration: underline; }
+  .footer-confidential {
+    max-width: 1300px; margin: 0 auto; padding: 0 32px 40px; text-align: center;
+    font-size: 11.5px; color: var(--muted); letter-spacing: 0.4px;
+  }
+
+/* ===== Requested 5-section calculator layout ===== */
+.container { max-width:1300px; }
+.container > .card { animation: calcCardReveal .65s cubic-bezier(.22,1,.36,1) both; }
+.container > .card:nth-child(1){animation-delay:.08s}
+.container > .card:nth-child(2){animation-delay:.16s}
+.container > .card:nth-child(3){animation-delay:.24s}
+.container > .card:nth-child(4){animation-delay:.32s}
+.container > .card:nth-child(5){animation-delay:.40s}
+@keyframes calcCardReveal { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:translateY(0)} }
+.card .section-title { margin-left:40px; }
+.card .section-sub { margin-left:40px; }
+.card .grid { margin-left:40px; width:calc(100% - 40px); }
+.card .field-label { color:var(--teal-bright); }
+.card .styled-input.calc { background:var(--gold-pale); border-color:var(--gold-light); }
+@media(max-width:1000px){
+  .grid.grid-5,.grid.grid-4,.grid.grid-3 { grid-template-columns:repeat(2,minmax(0,1fr)); }
+}
+@media(max-width:650px){
+  .grid.grid-5,.grid.grid-4,.grid.grid-3 { grid-template-columns:1fr; }
+  .card .grid,.card .section-title,.card .section-sub { margin-left:0; width:100%; }
+}
+
+/* ===== FHIR INTRO / HEADER FIX ===== */
+#splash { display:flex !important; visibility:visible; opacity:1; animation:splashFadeOut .9s cubic-bezier(.65,0,.35,1) 5.2s forwards !important; }
+.header { animation:slideInDown .6s cubic-bezier(.22,1,.36,1) 5.4s both !important; }
+.header-inner { min-height:170px; }
+@media (prefers-reduced-motion: reduce) {
+  #splash { animation:splashFadeOut .01s linear .1s forwards !important; }
+  .header, .container { animation:none !important; opacity:1 !important; transform:none !important; }
+  .particle { animation:none !important; }
+}
+
+
+  /* ===== TL BACKEND CALCULATION MODAL ===== */
+  .tl-modal-overlay{
+    display:none; position:fixed; inset:0; background:rgba(13,23,48,.62); z-index:1200;
+    align-items:flex-start; justify-content:center; overflow-y:auto; padding:28px 16px;
+  }
+  .tl-modal-overlay.open{display:flex}
+  .tl-modal-box{
+    background:#fff; width:min(1280px,100%); border-radius:14px; box-shadow:var(--shadow-lift);
+    padding:28px 30px 34px; position:relative;
+  }
+  .tl-modal-box h2{font-family:var(--font-serif); color:var(--navy); margin:0 45px 4px 0; font-size:27px}
+  .tl-modal-sub{font-size:12.5px;color:var(--muted);margin-bottom:18px}
+  .tl-close{
+    position:absolute; top:16px; right:18px; width:36px;height:36px;border:0;border-radius:50%;
+    background:var(--gold-pale);color:var(--teal);font-size:20px;font-weight:700;cursor:pointer;
+  }
+  .tl-summary-grid{
+    display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px;margin-bottom:20px;
+  }
+  .tl-summary-card{
+    border:1px solid var(--border-soft);border-radius:8px;padding:10px 12px;background:#f8fcfa;
+  }
+  .tl-summary-card small{display:block;color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.7px;font-weight:700}
+  .tl-summary-card strong{display:block;color:var(--navy);font-size:15px;margin-top:3px}
+  .tl-formula{
+    background:var(--gold-pale);border-left:4px solid var(--gold);padding:11px 14px;border-radius:0 7px 7px 0;
+    margin-bottom:18px;font-size:12px;color:var(--teal);line-height:1.65;
+  }
+  .tl-table-wrap{overflow:auto;border:1px solid var(--border-soft);border-radius:8px;max-height:62vh}
+  .tl-table{width:100%;border-collapse:collapse;min-width:980px}
+  .tl-table th{
+    position:sticky;top:0;z-index:2;background:var(--navy);color:#fff;padding:9px 8px;
+    font-size:10px;letter-spacing:.6px;text-transform:uppercase;text-align:right;white-space:nowrap;
+  }
+  .tl-table th:first-child,.tl-table td:first-child{text-align:center}
+  .tl-table td{padding:7px 8px;border-bottom:1px solid var(--border-soft);font-size:12px;text-align:right;white-space:nowrap}
+  .tl-table tr:nth-child(even) td{background:#fbfdfc}
+  .tl-table .moratorium-row td{background:#f4f7f6}
+  .tl-table .year-end td{border-bottom:2px solid var(--gold)}
+  .tl-table tfoot td{position:sticky;bottom:0;background:#eef7f3;font-weight:800;border-top:2px solid var(--gold)}
+  .tl-annual-wrap{margin-top:20px}
+  .tl-annual-title{font-size:12px;letter-spacing:1.2px;text-transform:uppercase;color:var(--gold);font-weight:700;margin-bottom:8px}
+  .tl-annual-table{width:100%;border-collapse:collapse}
+  .tl-annual-table th,.tl-annual-table td{padding:8px;border-bottom:1px solid var(--border-soft);font-size:12px;text-align:right}
+  .tl-annual-table th:first-child,.tl-annual-table td:first-child{text-align:center}
+  .tl-annual-table th{background:var(--gold-pale);color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.6px}
+  @media(max-width:900px){.tl-summary-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+  @media(max-width:520px){.tl-summary-grid{grid-template-columns:1fr}}
+
+
+/* BCS hub: opening animation removed */
+#splash{display:none !important;}
+.header,.container{animation:none !important;opacity:1 !important;transform:none !important;}
+.header{animation:none !important;}
+</style>
+</head>
+<body>
+
+
+
+<div class="bg-particles" id="bgParticles"></div>
+
+<div class="header">
+  <div class="header-inner">
+    <div>
+      <div class="brand-eyebrow">Banthia Consultancy Services</div>
+      <h1>VGIP <em style="color:var(--gold);font-style:normal;">2026</em></h1>
+      <div class="header-meta">Viksit Gujarat Industrial Policy — Incentive Calculator</div>
+    </div>
+    <div class="header-logo">
+      <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAv4AAAJeCAMAAAD7p/FlAAADAFBMVEVmJBbbWC7blFXX3KPrp5O738ekIiWkdwSYX12eeYCsxJnjJhXpXWPc0gwAYR4agERiPEdbkW2zPEO7hADyOUnf2VMNCyFBQx6PgliZlaS/vsPOjzLXrMDd2+D////5EhcPajL75xj2CxL+5yfw+/DOFg34FiMScjf86Of33BWuFgX+5knPCgiwCQH+8yz92E382yw3NTYOWCkCJwmsJgT6DCICRhj85dntIxT7yEz82NQGNxL78RiYFwAjaTtJSUgpKCcodET4IiQUFhKvNgBTVVP8pzKuyLQRSSSYCQD/80j++bD8tzP5yDb9+Mz9uEmYJgDPIw7PZwWzRgAad0EqbEL4mC6Sl4/NWATN2M3R5tQSDA7JSAL4ychnaGWwt63Udgj1Z2bziCqQeHK4VgB1d3PPtrDNJSaKioaqqaWwJyjb+OP93OTohxSsmZTNycYicj1GOTbMqauRpZWyGSRVZFeKhHfleBT5dXL52GeqpJnQGCL9qUdsVlInGBT7uLX85WjENwDtWFaXNgEtRzP++JUqJRq72MLyqRqw0rrV9NtPRDnZhAvrlhUoVzabuaNoS0iStJvQxbP56rP3xLnseSW2t5HZxkjQSElrY1r8lpTNNDPnaBP+qKmIa2azNjP2iIdcY2F7mIVNd1jnSErz17NIPEHPV1L7yGYFUx3GtplwhnWqiYrwtBfwzBL66YpvlHm3YwHYuDHwY1v2hXhZemPc6uH+mUMXOSI3XELaxzj8o5qdqKLVaWnEq5cqHCVjWTbNOUVDKCnTpjX+u2ocIyA9REJahGaZxKXbdm/XlwXd0knV07Tpayf0eoMkCQ1VVTXQZVfoNzbmWRF1d1SSSAO3SUeifXuql6nHmJoZGiEsMhkyhVCzRS+sqn3MRDn1q2n1vMH9825pXWGSUweDZljXaSn+xpH51409OEBdXmF9h4J4pIeTlnq8U1O3eym95szSmDHauUjthVD/nKFvRDpmYDSFeFmzWSuign+mmXrLXWPTd0fVucHMw5jb0CsSrByTAAABAHRSTlP///////////////////////////////////////8A////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////tyx1rwAAvG9JREFUeNrt/QdgHFd2JgrLYcPb8PL781/FroTKVUR3swPQINBoQuwmMgQQJAESokBSYhIpkaIoUgyiRCVSnqGkUR5pRnFmNJrg8USPveOcvbbXXoe1vfbGtzn9/+bdd8+9t2JXA92N6gZI1JGI2KiqrvruuSd855y7mEQS2bRyV3ILEkngn0giCfwTSSSBfyKJJPBPJJEE/okkksA/kUQS+CeSSAL/RBJJ4J9IIgn8E0kkgX8iiSTwTySRBP6JJJLAP5FEEvgnkkgCf5/s++D6H20Nyf8Z/v6DrR2WwcGtT14fRB/pN4P/Z6NrWfN56n6Efnh68I+ub/3gg8G1H989D5HgqdEPfnrwD/9wmElf+ulLly4NI2GY4X3DzHAC/3WS7UwulyvK6y1CbhzLLvxROC7LuU6eLjee858Vn1jAP8EfhI6+1fFd6F3Sfzk4FXoAuWJx8fBDD31836dOX790aV8C/y7JB8WjqnhEXGdR/23BtkZHR63vfn3061//19fUC1OqKOrOb9UOnPLCBTUzOVcYs+3//t3vFgpfvzhTyqhTU+KFWI4+hSVwOvrFG5N/1xq1bZ7nbbsw8XP/8I0jR37oidffunx5sUgE1BGSwyfv23F6OIF/Z+W0LHLrL/rVMeWTL499oig2r9hjy4bejbOK6gjPp5CgU9rWtCF246zGpIXeYwqfdmy0oOqcrsMKdyRz9I1Xf+ud1y8XYUtGy2Dxoc/e9TOXEvh3RrbKKluW2PUWdaRmK0gjIvCjFTCR0fFPO3ldEsfm1VENYIhPqx1U8xz6cSfPidDPqhNY9SNJ8bY2p0vlfN73ErTnoeVA/r9w5I0nXn8JtgNBLt46uWM4gX/88D+idx7d8NzhU0MsipkCwiASAKOtzajwYvRH3Ap/tFb4S3ljBOlhsEJSaNt52cDX2RL8uZbvglHRYLdBSwCtO7uQEct1dwatQIl1tkUdbQhv//GH78AqQF7Cg/ef3pfAP074T+nsBhB1xCYWAdbGhZKY5SgkstmOLMhsFmFxhCfnQ4jU5lQMUK6zWkA9z6dc4dE5V1zgEoiIdwRkIb3x6uuLaBEIxQcGE/jHBX+R2wDoz4uZK7YHf21Gz3IUFh2CP5flJGPEdKFI4Z/tLPrFiuWeUUnZFWP1/QJWAPmSE3Uxc/TD74FX8F/3X0rgHwf8L3DsRlgAxpymUPDzfG3UkJyLynYKkQj+z5iKD/55tmO2P9hxsLEYBdNZ4rxSu2HkqZHX9HHwNiD+tX+HloBw+PEE/nHAfwOIxGY0PuWYInztqu4YBR1zRgn8+e7AH68AVs/UXPTbfGGSWP5NnJPzewbIJVDVo791OVeUFz/7mwn81yCDsrghbH8Oq3/P/J+oip3clPChJWPU5EPwp6q6MyKqE7y7w9nWtOruCitKltg/+HXui9E2cOHIvYuyXHxgewL/NcCfy28A8HOsmLE8r1DR5g22c/jnfPDn6Qld+HfO/RWvadjmT/EpXuEtVSS7Qv35uCwx+CnsiQOAhPPvBTgudOY/oxUgn7yewL89+Oc2guuL3Y/qCY3aPlj9Gxx+2lwntLEHf7se/h06H1rg6hgPkVay5dROkEgrR22fVc/KUfXP+c0hSJk98ZKcK953KYF/e9q/eS1LtmquPqIfg2NYFieR+lcc+GsVkaO6sfEpuDUZP6zx5Xr4Sx2AP75pCP4leH90iZvWpIiXPee9TQfZXKOjhLDv2EHi0e8vFuWXTifwbwf+UiDXw3Hro/6zojGH4UG8Ud4q5TFqsh25IHxMn+ur8COlPP2xe0IuPuUP+bTqhNkPpg+yfVL9/A8ZbNY9F7e28JuIzKBXi7nbMxa0nvD/QzmjS1wg97JO8Jck3bX+IfijLRkk+Sl16IQN4R9bljug/VlxUuP7Hd8GrW503+PyM8BM1NWjj+ZyxfuREbQvgX+z2l+o6GjDlyT/c5C6j36sBo0Tmuf9IoCInSM9NIB/hxxtBM8ya4xobpwpxS8ZGLRrgT/HBd6OhLcAWT48mGj/5l3fGWNKxMGF9TF7fBqyLKoFpB8JH1LhtXMGea7cbQ5/J7KlEaYPPluhNMVysW221JWHBfDHb+Xk4mAC/+YkPf5zC6qYlzob8Vt98ybGr/FyDQcGsdhWRZS4Dnkj3YU/0DpKI5DqoqEt7U3Di1/G5V7AjYRI0DtF+fLpBP7NyPXcRx9NqCKbx1v0euE/m6W5fwgNEvXPK0ptpCrSxXG7w5+TxGsarzjwNy1DZ11Hm4vh3TjbZBloouITxVzxdAL/JuA//rOj1kRGFcsSt37aP0ucXJYzlmuKw8PheS2DSTFc9+DfkRuA7brql+m5eGL5u2s6jndX9iJIJFdifLgo3C4m0HrCf3jX1788ZhXmDZEa2Ss9jI6tDokk/9HH0ijvol8x51SRWwkgHBcD/HkP/hzXifeJef4Zvp9wOnBUC4d9QjSGJsNIjR8Mxzl5GcgH//Jx+b8m8F9FLu0q2LZds86pIuTU8/ihrEf1F4W5WHGZbwiY2qQodcIl4cLan++Q8UPyXVwWYv4k3g/GD39QZV1Cd3yLLXCjOP3IO7K8O4H/KvAfU6D4zhpBDkCZBR9gvRJf8KHMGlT9YzKOOQo2stQN+Gsjar5DixrBX89oqX6y0SD/14JiTo7rxC7j/048uijL2xP4rwJ/XGTLFyrIAehcpLGJxA2Giz6j2S78U1pFz7Pc7Qt/uq6BXeTymWxt2qDZgI6EdDknWIB8YOQCPJjAfwX4j49BewVskL4JFMTy+qR9s5IDFnXE4/2nahNVMd8ZxzcE/1rHtD+wKzKa4pD5cD4PAjRZiesMv8iLFXC6+j2ZOZTAv3HkB8PfTvX3A+V9CiCQX7f0F00PYSsBV+DyVkXNs9xtDn/oqNKfovm8lPay6pAH48y1cBH2P1Ah3j4uFy8l8G+Q9UXwh74DJnhlGmQA2PWsfQTnF8gBDjVA0QrVKbYb2r9jxg8ScRIbdDxd0ZTMgYs4uWy8ni9XZwiJxjtF+e8l8F8B/ggEZj804DifMVhpPbS+jx0z5QR/cOxTy6hd0P6pTsKfM6CdVr9J1L82Z5Qxw5UQFTpSysy5USe8ANSisJjAPxr+BcUm9UegmmxrwRDdgHT8PPsV3DVyTknCpgJhPvAK+q9AUr/trKbW0l5q/E42OZ6oainYXnlc7IKUPzb6pU42svC5AXARR39Uli8l8K+XP9pV+IR3Ay3IBkAOgEhs1myWW42VwsWvlbG2stDlYGMZYv8zxCCTYiX+k74LvlL32OFPwIe20nx1jubWcC5jju6vXPubZNOvdNxg3Xi7KB9O4F9PedtVGPPyTDguUVBJAZgXP+iaM0CMV04/pxFlCfwHs1CltnKn4c/GD3/s+E66RczQ2FDVuxBa8DgQtJhMz1zOgQG0L4F/MPLzry1NAU2L/d9+tDtr2rIh5v1k8m7CHz6C+vfKfrUK6YUm3Vbw55z4u6j6qhgUfJouBRG8z2gX0o17ZXk40f4h2z93be685Wn/fsiBIQNIz69nAMg4x2PiswLGsjahxp+NC8NfiR/+dDmLJcumFY6wt0KFL9eWWuDW9nZ18e0idoD3JfB35adzk0alwJu4EgNK8SA7adZGVLFT9n0zuEHq3yl6BN7/pCF5oYzs7QF/976p05ovjTdXza/1gO2+WzHzuy+Ob020fwD+RXVKVAteIVIKEmAprZAx1g3+yM01TtQIYsAsq43S4M9tBX96HqT8HRITLOUMmJVdNiZJ/FM0Xv7o/FO7nk/g74e/rIp5MXNQQ88I12FjYiKygJADwK5P33+IlxD1z0O4EBlBpOcV9cel2wj+UMCzXPPql80Ro5saxekrjz7pamlEq9nWU7v+ZgJ/H/yPX+DKSDNM26bD/CVOgKIdVPUWt+WY0AM4V6dN5I07ua8JVXQdX+m20v5i1de7jrcJgVvqGvodp0FUM+c1PFHjyq7/ewJ/z/WVL+CQijqJ7g5A34E/cjnnSrgHyjq4wNASyjIJ/MEB0OZV90r8JfncGqARbHEbKHeJL+7IqvN8yu2iDksMn7hr6IfkmgTRp2mrBskHpFO0p/59An9HthL4SwhvyAGGLCvvYM6sFVTdF3Ppqs1aVpf9bUEK1Qs+0MdRHdsl+JcK3giBlFYx8myXakox+LMcdLDJi+o52IPgSvpTtrbrbyXw98GfbMe6OjeGbG2FBICwpWpaZP5C1+tfONIN2W34nKrNew3/2bj6KnYS/jTsaSxD22qHwnSTtnfguoN+YBShD3m1NGFh1w7rE1Ozdv1RAn8Kf2GKoxklsTpvE3uj39W62jmSAu6+ATRlLGge/vmCKrJxZqE7Dn9ypGqBT7no1yrA8++ONiEXAM81r05OoDup9PenSKMV274yPpzA34O/Ux5kZCbAA/ZGnqRM/mZmimXZbneBwDyVUcf455Ejfs6IteF/BPxj5PxQfZFXF6DMheh/hZ8rsVJ3lL/XLBcZPhVLs53BOTYeYjnx4kaqAFj32V6cRzYbsUmPWfB/FbxVFjJq1zNg2GkTZ7x5L9AWTYyzD1Fn4e8YcMifAmcK6xMekzfAF+0a5QciT+D0KriaA5OokPKvFSp/nCsm8PfBH/eIhHumLpy3ifVDcWFr5ytqt2cA4I5bIrYcaDg2xS+pbIz47wb8JRUtYOBtQPA2VXummicT9bqjRuBe5cXqCFL9JlFmOK9v1kYzU+qrRYT/4QT+LvzdnveZgka0vzPx3L5CMgBdNH8IV3KqorlGGC6SAs5zXLkFDP8vdwr+hLpapQlf7HNq1yB4y0lZrnv3UC2hh0nIs7wTzhvJiKxovFo8nGh/PNbatxtDnMBQL1oQIlZIUxrozKdNlFQ27z7V8G3OZjtQjgWNOlSs/k067u5rhpRtznLgmsIGHm+R8hifq7q+zS8OEqVSJzXTa9g+UWWldpXIan8j1Q1owKUGamXM5PHuQ6Ke0DeYqjL9dWF3Av96+HO/LRova6aimB5Ri9cKk1Mi9ejCibDOwR/n4lJOZ0DTotPuuJhUYwD+TUV+WpqCw+Zd4w137MoY5TUTN1eFv5fnBeJIxTIVp8BewZl8a9rAXSbQ2nwptyOB/1Z5yg9nXJ2EgwVO+JOWZ1szyDYgczDKXbCCnA4Jozxl/ZPgDxtXE6724N+aGBVvWodiT1TzktQVi4c8R4T+ZVuzP4GlB74HGP5moWI4/fREtZhL4I/hHwrY5UVRndCcDRN7njbsmiJb5roSuOOcLcaoQOwf93zmeft8VWxggMUG/xgjL0j517xB9VZFLXOd1BYBAw13ODmHaez41vGkdcxYxnBur6SLR+ViAv8A/F1izRQygDzKAbqHyGocLal6Oah+pY7Bn36ljqLtm3ZGhnFHca29DsMfX3rFN6fYnOhEv5ZIqwy/tbyONk6Hv6VAuuuv92sXCYeRow3m9A9zJxP4B7Q/58z5EoFz46W/wHasna8Yej5g+ksd3c/RgyQGBGaNIU2mTYoxZaA7b/xMlQo1xS3YtCuixHVa+3PevBgjg9PNCmHMIvgrJn/DoOgnSk7Sjcvy1gT+XDDeTu+hKGYs36StlInuoXajJAYsf6mj+Mce2kXXAuNNiP3fFvCHmP81L2mXMsdUsZM8Tyn05oxJ0F0KqZeAd6fUtGuqmKcJTonEunU1l0vgz7Eh64d2KNDBASAbQD9tU6BNVJH+l/zqP5vtDCGCkkzFDHbdMEAVE9R/LAugrcBnKyKqY6YHf37e6GjAwFFCTluT+StQJ4cfXj+JdxauEdIUIUHT/j/I/DmwueG/vX6stdviSjTO+RwAHL4DDqjoLhCC/zr0N55G0XLinoOG5z4nZASqfmNT/8ao2+QwHvjT8RJcFjntJGZl4ttGGBsd9Ze8tzWlTlsubb0fPCeen6hC2JXzcVFJKdqiMJjAn2uQdxXVGXwj+6H8FyfCTF6bBzVChnL6NE5nQniwBisa73WJ0jJijL5v7PB3+tVJEmTsiPEBfIdp1Q1JSh1pasg5JwaiEfRIJWlezF//xNROuEZr8B2KJVlO4B8ND8IBtdzqL5o4t+YMvRyYg9cR28d5WsBaUVwzgr9o5PNxmD8E/l/29/mJB/4kgGDgPqXI6ezvRx/GSqIL/840NeSccA7wHGq827QMFgCvLatGPnKcgKR+KJ/czPA/HQl/zsF/Xi2NaqQBNETRMAHBhi4QZa6zJatO+282P1XytvKUbWVEneVi1/5xcX7odK1yddQdY5cC+HlaQuoM/J0HhtYdMVhtmzq9vDYJc0uiJ8jrRjF3PYF/ww1AnKpOQ7GEswNA+gn64E5BDqzDUR/yOW8c1ChfCzTZRDzh+Qj4x6H9nfH0GY1k6nDb4ELJY2tIUqc8YBhMLlZP1IipSFMONg+E9Tzs1k6JfWB6H7cBkl/rzvhsuInD5zy0wSIDYLADAI/VOldS812YAwyH10USw6YDGIE1H6PtH3Pkh8JfnSBTvGzwPaFNi9fSuVPwJ6bqqEbrNChbna+NllSq+qWAunLKt42XhMcT+IdsQrdaSOLyeSMzhnPnpAwAAsqmVqgiW8FpOit14lm6lkTemObdBrww7ijPbWj4oxVbQsrfTGHGQcq0Sthcow2zO6QyMMlncqyWwuF+l6toTeOJzc6ESZ/7y+FgKfT+PC4n8G9gemCGcdkojWi2G3+ERrhAv4c2WFyjv4wH/nQ8Q9V2/G9cNGVIccxBj4J/u2YV582TwMedI1W1pLHbNMT8OSdb0hHCMyF4zgPBs19xtT+PvQ7JvSwuAH/wwXHy61758U1s+09xK+tI3KZVdTIAbuU2b8041be+0GejWT1S2yDFpydljySFaVpVcrosCaJw4Q4QTepXCv+UP/C5Fk8FMiAwFo2j8wmcAe5WqTNsH8nZbIhNJVaX3KE4jqNkIae30VgEdynoZ4rjCfxX0WwqkG8UHEnA5Fnol7ScEfOevdsK9FqMpUDNLPDuaAnCPGbOU33a1hk5H/wJITi19uFGpI4Liry+5WXqUtq5zs0M8917UYVof7+fpKUVSlMim200FoHCX5L0P87dB1DYl8C/0W3KiwbhQKfwyAmFNMSaK6llf7EMtyKI16BZjQoZDEoGsBZKXtlNe0k3jvRaM3A5Aanr1C6qMbSgQvrfP84CIrWdRD8ExtCykySgBvK+ISWg+kdL4krPxdm4s5K6KCfaf3UWy03NTLl9UHAwtDBp+G5ks9DhWtP9GP8F3O7B5KFZjbZs5L3MQFzwJ3H/taIfW/6kVognyh8G2XHetF0u5iw54J81FsjeTFqZENv0YFVcdeGVyQCOt9fV+t/48Cc2uDHvlG4j9Q8hIKVmzUANQPwPNcghQAYq0qj9hHzH2zULjx8LnJBr2fhhcTVBKuWf7VU3FzQwJLo5+IsqVPj292M9jC1/qdXDtCiiMa1pCmll4pbnLRhNdAYguWLJWDyewH819HNQvlcj7Z8pmfwTXlsio4CdsF5n4M/CrHdcew/V91D26HbJz0ptaek6+JtRrm+zuJXcS2Xzxjmnn7/Np2ovI+XPdhT8+anqwZpNQE9yIykTistgZupq49DytPLrVfn5BP4r2QplnDQU1YsaNX1oMyBbGy1l8jTg43nAsTMgkE7ladUX2ngKGZE2DMHrjmvL+HEjP/0U/lNtB28J65u0pyhZTnsH2+btjNiZiIB3m6dKE5pNSzIUpyVkBlty0qqtiWme4kyxmMB/Re2PZytKokrCa7hyGgZhI0+U9sH1ExXiHhIEdvoc0W1mSunntWmj7IQ929Gs9I9o5CdFIj8++Ld+POJEQub1Rs0pzkS64YTRQb8Xd9gwKgVs+NBklwK6Hzm9RK834R4R9X+vfH1Twv+D5mx/zrndujHj9S+gbeCsZWPKqxRz7zYXGftp01dlxZJGSg4wi76gimtqr0JSQZjzQ0WbU/NcFCm40W7GhaZ6EIog7FJkUBQEiK+QqUzN1kO0snpZoo6MaY2WNNI1p+CavMCdbhj5dNQV+1fV3K0E/qtmNTkW6f8MnlTIu5XAyBUdweoGk0oimaDwh7R1YZ34n1TU75zHpJ7QaJgGd8pH1o/kfwkXwkZDO94388QYrdkU/TaCfznkTa8O09B1slxenePJrTEBiAeNPNsBQji13cpIGc0hpYDn0pKsiKIgZaROsVn/Am10fu/nkvG93KUE/ivDn34hVidqyLDFuy0xhHh+FDnAErLDG/mh4eAHFx1U8ZtP4cvSofQACt7xhMQRQ5QCJQcrjyGOxgFyfclyAu0/0nzcP/LiSVte3JgLl9iij5pK2D4SFzx5DFUFmN+pThZoLQTsYqQlMbDROa+N+mqRH/p49KPFk5vT9j/SQttAOgigNFKzbQW4nybpHsbzeBKk5OhVroGhsIbnXub0gzVs+5gm8jquVMSyu7ZaDv7Qv4BmIMSY4mngE34TWb7fZJtBPJGSJzNildoIbSqVlViPQxtXspeFbmQOv5PmulL82KRBt8Vm0iLuL3WjKCTwXymw5+IYeUrqNAQbMBEBbjpEI7V5I19nFYe85zWIjv4H4rPTOse6qELdy9pEHbFhGZNgIRltt7KwTnwn+udoQRUU0pMCKmy1El2iEumIEWtAoAyVqNAECdKQJOCpmPxIVSfRfq4pR8trCqe/mns+MX5WgT9HG2XgImDH/KFNjLW5qig6L4lQVzorguhIRF0Miq6v8r1oGLo6+TXLtiyw1jWrcL5SUg3ntTr9A/fvdD18iODhdV0FmRsdHUNio/+tfz1JjkeORq5Rp8fR/QcOXJd3SDheNVOwbEe0pRL9pQQ3Bq2AcozRftE4AaNIFGJ8wg6mmDYMI5T8VY3cyna/z3cy1q3sZePD3xcsJLdOFKGywmmAQrk4Y5OEYhVFg+bEoy/lcjlZEOQ2BP2hfFwef3HX+Pj4LiTowzj6WVHOOb9tT+A4cET8OYdO0eBo8DN09bliLiT0x47kcugan/rKV66cP3/eOn9t8ujRjOoIrJy4QsIwiXCU9H/0tYDX5qtT+bChlo3edIJhBbRijLcS13fVaJtEt3qWM9SDvNNGxuH2ajOq7iPY+pSQJImlXHE3kfvv3+3KycdOoh+cREK/x188huSk7/vdj538/QdOPvLPH3nkkfsO7d9/6NDu3Q8/dv/H9ztHgtc/hj4/gL84efKxB0DgqOgr+B7/AF6Bv9+Nf/37v//7u9ER70cHPfnYZz6z+//5+7//wAMHQMhHnzxI5Rb9vIcK+eHhww8uLuIv8Qr5tdyLL74Ii7S4ePw4WhJkZVx+/d5X3zhywd2Z2uqQ59zQvIGcXht3b+ZdgqeVUcUo2zNyyfnmpBG9Jh5dL+LPejc4l5qHv/edJBozYw670C3qvkEn0HGute/cZF0ltNpNIMPDl65fv/5Hp0+f/uBTn/rU45+97+PDh9ECoDtJ8a1f/r2jR1WVbAYBZ7ZhfEByQ0v45oql6UKNJMGd8JttTUDwTWp5JTnf6evW8Xnd+/u3E3gDBwD7og7Riuj/kZKDf44LRBw3EfwbL4vB5+97AC+DXHHxrSfQXgBrwEeq4lYOM+H9Fxme1Ru2puDqH5M0L1d4aw4ybFL7kSRWfF0YTuDfNPzZsqirc26FEc4dActlUs1LZH4V7eyRwD8sl+76y39wuSgIueL3PjyCloBXj9gE/4+dqo66nb8croM1jVk+bRdrgvp/Q3gtgX/TREyMaWPaMl3eDJmjA0WQ4TAfgf9nE+AH7/3uW8h3Ll6+98wFXXfb2kmBYTssF1T+ZdaAvkfY7KfzinjTLFTUqb+6lu5f+FmuU+zn9rD9o2j4LGvMWLbpq+1TbOguoEteZw/6ygT+0RvB44dlQSi+c9QQMbhDmVou3EtPx30nybBgXHeBvtAKk+qUyObbH/uNtx7xspDAv4UoKMR4RCNT8JpAgC76RNPmVGhFyPoZDgn8V3gGh2RBLj6KtgA96jb7fVXROGfTXCO0L8RtTZC/pYr+faKNPorY+nm1eDqBf0vqH2oAqnNeH2hTUfhPcG8lt5+901Aggf9KXvH9RUF+6cMpcaUbnmXFzFiNJ1lqZ3AGby2pYpmTfAuldfjjP9XPrE+/z9vP9gcD1WVUiTC92WuDYsPWXKgYeX/aPYH/qpJ+DLnC96p6JJeI3GiRDMtTUm7HSWRqzqgiJHqzXra99YQC9rwlcTG32eDffKl7IJUYHKQJkyCdCj/S2kmzTqheyQUdJZLAf5Ut4LWiUPzGG6LoVE7gCju33x74Wa6awbkWHpn9GTKpNEj5bivyKem/sS5FL7ch/EPEZJKC98pNTRsm4ZEaALoAEvg3I9vlXPHRM6I/ZiCRiE9erJ7QvF53YPbzMG1HFAMJxrZ5tTDs643cawn8W0gZOn2mOFF92ao5A9iVfii94K2MSprOSwn8W1gARXnxbVF37UYnIyCWCr5Gk86I9qoY26RjtqwbucMJ/FtdBSQXbyxYNRgFr7iPCChAUyybaP8W5bOy/NYRnAtzudVsHs8ZcTOMxAGw56HNpBRXV1WJ09eF97CBRtu1uwtIMISuAM2foegac+BsqJ8tiU7yJoF/03LpsFB8+4K/Ulc05jWf5scJRp6MaI+pYTrO0+ivC5cS+LdYdUrwn5UoB9edQo0nQaoipXMl8G9Bnpfl39DpKAA8Y/MEHlTq1nUpvK0VSrR9IhfXAoB+P48n8G8t8sO5jeORc2aZUHOU4slQKcXWrArtHZjAvyVZlL+n0iGueUNFZr/tdJek7TVGqjSyxvrrW7i1bONl/WjusQT+zXSY8Sl/J0qH92j0oPAoTWL+wByAeVWUsPaXE/i3ICeFIh6hyYpqZgLYhCbu6OA07p+uel2JJC7bdoeiALtIVIuLmw3+YowVqKKRmcBtUJzRPtAH/YSqlrmsfuZ4wvhsRXYgBwAqAtRrNTwnzBlvA/3YP1owxHyszfQoo+gtOYF/u3cQ+pwY6gjug4v7MSskBTZSEVlJPJNo/9ZkUM5B8fKcZvoSigraCGqFjC7GMt61Dv73ysMJ/NdwC/NGZsnSnLYb0IRAIcMFRfX4/gTSzco+gv+Xrs0UNNy/lk/h4bLQWbsGmd68M8o6JreXI3nfo8L2BP5raT6Wn1IreLByqr/faYNVQw6wOiknxk+Lsl9+v6BpNs97QyugoK4qxtUtMSy6ITySwL/NrZPGqKfUDAzaSfXTYVxgB1lzk3clxk/Lcv/4FZv30I8b97/pmP0d6BrNGfKBBP5tR4KINaqLpTlv0BSJVlsj13KvJXhuVW499X/44I90v7WgRnUeiKNrHC6mWYdO53cQ/DEDQiqLxjRQgHAOmMbqrH+ZS2z/1iX3FRuaxjk0kkJGdPvNdyDyw6mXcwn82zZ+oKFPFufhoe28m6XHU37+za5E+7cuP4PNHyfcX5gUSfOA2MfFUEfaeEv+zc0F/yNcLJunexvpuBVdnavRLD3uIWu/ksC/HXlk16/adJKONmKIbMxaP8ReMX5PPp3Af403EldB6uq0xZO5ufA/gv//PwFzO+bPrjEyv0I7YYhsh+Gvvy3/5QT+scSRSQtikzZBSeDf7hMaPz8GaV+Y1ch2TJy6paPFP9hs8Jc6An8Yx1gZqzn0Tz6Bf5vy/q6v23bNqhh5tnPzIR34rwPr586DP/Wk8kYJRsGT+Vmv7PobCZTbkefHv2JZExm1I0aPz2cjpK3jxQT+MYWSYSDdCacIPoF/29b/+JW5kppvu4lVk8Frlmj/BP5rDf+whISOZ5DQSZD9CP6PJ0huS/bn/hFMTpA4r/q90Y1fg0gE/pflBP5r30olqIjBnTrUDO6DnsC/fZGLuG82F2aYxL8PiOLrXed83jl8/6hUel43vmXxCp/E/duWB+S/qHfO6w2S3u6VtybwjzEEBDzCiqWNWYnt364MCt/X3f7PHYb/e/L2BP6xwV8i9XrqxEcf7Xo+AXK7sqh3R/mz+hvyjgT+cRpA2KRU5//u+D9IYNymPCgb3UE/y03JhxL4x6b8aasmSVQruQT+7coO+Q293HElRTif8v0J/GO8rRCoy2YlMZP7VILjNmWf/I6Y7yT8OR/8H0jgH+d9hUEYWVYsFZPAZ/uhz0VV7Jb2/38l8I8v7IO7AOEeiLkE/m1LsQgzLLph+6vyngT+8YuYSUrd25fPykfFboAf4P9gAv8E/htLPiX/qc52PvYJreoT7d+RgPLRBP7tyyX5Xp3l2AT+ty38zxz/HxIYtx/6eb1L8E9s/wT+GxD+b4ks2w3jx0jg34n7mrS4XZPkXnLhz3UY/v/fBP7xh//1M4ntvxb4F1W2s+Uu9OiGfDyBfwL/DSZyzugO52dzwf+Drtn+agL/NcieosF2mO5MZpVsrsjPB12z/dVcAv/2pVjUuXbmtbfYnmBTRn64BP4b3vhZFDsNf/KgNlvcf6ob8GcT+K8R/pdxd88E/gn8NyX8X+8a/Dcd5ycxfja67JN/GcY8JvBP4L8Z5ZL8oS4B/Dva6G3zwf+D7hg/CfzXJoPy2zptc9XhwGdCeE5s/w0nJyHpi/uRcS0pnda1fwL/BP4bThaLascpD3S8UdeH220O0kMC/7UGfiSuC/A3klL3BP4bzvR/VZe6skkj+CeNThLjZ2PJfbLKkT4/nQ59IuNnfwL/BP4bSo4XxQ4z/Z2j61NJj8/E+NlYso95XezGMwL4/3bS4TmB/8aS7fLvdbTHoU/96+/Jg5sJ/kJERI3rwJ3VMwn825WHirjHGxcz1snIAM73PSuq39hc2l+Y0lnqVHU0qJbAfw1hz++JkhQn/KNnwqMfTWV+dNNNdym7Ke/6O5LNZiUpG4fxk8B/o4Q9PZYLxzk7ADQilqT//UjppU0122tQPkK4Hu6t8IuE0S+xCfzXUxZlVZdiHG4kBdxdzjGDRN2oViffz20u+E+x5bKEoU9uMMdlObIUpPiCzInr275cEt4R3UnhMTPcKPilLKerpczyaKHw1PubCv65iiqKPueXcySJ+28U5V88SuEfM/rJQ87nWdEw1KsvT1iazdtP/cimgr/wXzKlEloBZbYToPecqgT+bcp14VGR+KocGy/tDR9HN1S1tDRqaVqNV5RPvv7Un2wm+D85fr5QODiTqRp6BzMrxPZ/JMFyG1LMZfRgNHrt8Hf0vm4YpZmDBY03YfRyKqXYX3/qkc0Ff8vWkIwtVUqqIZIAG0cjY3HuBYnr257cJ3+oR+ZnW7d0OCe6D+N2IMZfmvzaqKbxPMY++oSnL//NzQT/reO/asMb5zXt/Mj0pGEYIutfAPFstEnWt10ZFi6r0pqqWBxt7zxQoox03ci8XNBqppmiQlDwyq70poL/Lhu9c9u2FVgFmjWyXFJVneN8wbEYWIYJ/NsVoXhkDfW9vpF1zgYglUXdKE1OjyBrX0MPXvHD37Y/Gmc2E/wHxzH8yQbYz5uaZRUOVgwDOcP5fD6kari12f4J/FuWw/L39Vi9MBHt75VzFjZ5iKR8wo99Jbfp4K/4bgE2gzRtFLkChq67of+1GkGJ9m/P8BfeMaSYopzoSSLsl+ZHCfJTPuC7X9pf33VrU8H/Z7D295t/KQV9z9dq1tyCahhY9+TXiv/E+GlLHpeLa+Pjuk8tnxchwnluAtR+fz993v1h/Ns/u+uRTQX/0wj+oS0QVoCCXAENeQJLFRVtAtxad4DE+GlZ9qFnIxSPgvop18O5JUobh9R+tbQwN4YDnArPK0jFBXUe+Ya3v/7i4CaDv8Vj059P1d0Onq9p1sTBBeQLi2w+lCxM4v4dj0pQ9PvoDk3e+kDeXkQmT2b6ogVq37fH4zB/ippB8D0CgXbj/z0+vKng/0fjPztmKx76eQf/8BO0CYArYI/OZ1SgRkis5EWQW1wFifZv2e4vOrN8uTqmwqrQJ5wtBP3S5PLNMTe4T+M79DsFf09/bhfOVTL/qMhsKvinxy8WNJtXFL/149qCYAbBrdEsa2QhA2mxfN4XBWplASTwb01OUt3f1G327Q7Yy8XfAoOzAkweT7mZdAEEHjCOdoyduKoaaqZ4cnPBf2tu5k20MZomXgF8yrMJna0Au0Q8shr5sRszJSBH5Mkm4Nc0q6ulBP4tSVFevLBqyDObdQn73hPgJBBRVSeXn7GwWWvzAZMn6O2aSLdNzGeqSLWJ6tvy6c0G/4yolr72DE6CKIFNwNEUzpLoN02tcPFlQo5gy2UoEIPAqLMQskgS+MfkkeVeP6JzgZinRO52qBqDrgBy/wmTZ0o01FLmHGbyYMPepvY9fPICPkjtm0jr2c9gyxaK/aS/+Bsys8ngL6s6bJNGZn4ENgGwB1OhRYDvF89jT6Cm2dbo0mQJyBGS3xat2wBCjyuBf/PySC73ql5f4IVvaDb0oyznMBo4qEzSkTKrfG3E1jCDx6fBggF+ovetiXPYosXgR39vFBc3GfwH5QtOSqQ6WRnFhqIdyASaXjiIuAhIZSBXYB6ZirqvUCBAyXXRLyV8/9YfSVEoZoDhXw7n2iVH2zeIciK1r1bOjWJb1otihDb0FMnya9rodAaC2uQp4ae3PsM317vWF3wlTipDiCyzcLAAYYL6W4ZVB+86S2iRgCtAVkBw3LJvF5CScpeW5VZOvlcUGxelB9wuXxwCYvtfG7HAS1PAiuVDyt71dhH0rxQOLqiU4k4PBCUZr+aubzrtLzr3E7QApkMtj+BNgA/Y/zzvWwZgHiFPQHPuYt7fJDXKCU6yvs3Jvofk4qNHdc4XXItuQRCINuSx9TqNsI95+wp9WnwqrMcgvqlpI9OT8NQk6iy41Pap13PMJoO/1+bKrX2D0rfMwQJsoaYvZBC2IHH0mNCDqrrO5p0WAvXPC+sW/WgC/9U1vyy/dUGPiHdmpfpezA7+gclDNVbY1qeiuMF9q4CpLGJUFk3M5A5vbvi76RK0AtAt1cCI5BWbV1KBW6r4VgNwI6yDlSqmB1GKKFe3WSfwb0Iek+Ui0vwcy4VDCbg8hQ05WoS3L6rq/MSVWs2/WfOmz9rBsQysq+yx6QrQuNyOTj5nLV/m9A9zpzcr/H3JXJcaq5Yq56AiAm+oSl00lJbHOZvAdAYz5Mr+9jH0s5S0uVo91nlLkC//AHSIJHGBQD6JI7D1KRYdWfvXloivpihBrd/ve2T9Zg3sVAR9cYWKVk59SWA2J/w9vLorQSIE2erk8jM2jiB7C0BRArE0uO9ol9C0CbjDODMsSVLwSSXwX1F+8+McAv9RHOr3VWX5jRPvfsKTybNg7c9cJMR9JSKtRZS/Qhjso9OTJWTu41BE2JtwnpB+Rr4FRLtNCH9/iBLix5x3k8AOUufnkGmJPAGHHhW2L01QNbAEbCgUgCwKJB+9pGQC/xXk+iO/JuQWX1WR0c+VIQonRXKWfcoENubJpTEnPqGEM5W+sAVSSi9XIFVP4hNg2jo+NYmiOj6GJL4jrIvtszHg77vfNHlLb3dZEnXVKM3cHLM0Hzc2sAEoTioRb7Nz8ypmyJFkigf/zyZQr5OfOZkTcsXfKiGNwUn1jpM/kEY+i8jYLy3Mnb+C9JFD3Of5UJAax37Qs7BvzmewsS+5B4jIU3JU+cvMJoV/XW2o7xaRehdMm52fKPj4U1ExBh5qhiExjHdb0auzhsBnAv/Qvb+vWDwuX371CLLJfRZo5ALAqUl4CqUKLtMF2mYqzFHx7wFg7V/F9BSvm6HTyS8qlKr/Z/mzmx3+fk4J2SdZX8ND3BVmibTG4F1OXGDXVXC1GDY4LX+IDWmXJO7vk0uPH5aRFF9/+4yog1/L0j6rfv3v6WlK4DTUBQhIe41J6vWPw2m+uZxRVT0QLGJXal7DnZHX615s8PEW/hgEbALgCViayQeJEb5CAayWsMtVWEIPwYAmZdkLau4f3E4A7ZQTOHz6vsNFAUF/8dE3SOI1VE/tLgGajQW1D+HNzPwJonlsm6TdnQYFhKHus/YLI1fFBrH9hlVh4qvy7gT+DdnkviUAm0BladTjkROFT7KMweADSQxnVCDTlm4v7d8i/Fcvkrp0+r6Ti0UBIb+4+M6HR1UxXEQasvIx8tH/OA0Z4KLwbvzBYy0ThQP3Gzcp8BZSdNI4DH9RXRSGE/ivXkWEbxaLN+I56gnwij8f5ncLcDTaHhu9OT0zea14cvg6usXDw/v2EXTti0nDDq//YvnNutUzPPyHg4Nbt27ff/8DB26BoSPnirni4r+7940zqo6gL0a1T3L4N1zW8QLA0104MWZrgXLUMB2LgN9C9mapqgbM/ZVL4N0najyaO5kYP803D5AkXTfU0jzulqRRilWqvl6YRERNXiv866/sej9XpLJYdGVxcbH4EpbFxcNIHjrsyUNUHsAfne8PH37g909+/PEf/NQXH/lP/+mxx/75w59B8thP/Qn68NgDj508+dBDf/AHP0pfj/5dPnz4i5/B8ld+5Is/hX67uPjQTzm//W//7Ys/dfiLjz32J4+d/IOH/j/0dIdP/tRDhz/zmQMHDqA/+uIXb9364hfp9dDr+ikkJ//TY3BMfOhbX7z1/q/durUIAu9JDkrx8uu//OrbR1VDBZ2v+3Is0UEejP58XgQG50KAgBWgofe7rRpwbP9cBWjoZclpZbiC4RP0KkD5FwUmgX9TWwAbSAqQeroaH2KHhkgnCm/y9td/9lrmzJEf/OC9Jx599NFvfOMb77wO/15/663LWBZd9PhXR2PJ5cZ3PYX+A3kKy65dL75fhGXkHugl9D95HXkRvKC46B0+5/79rmLxeNH5u8WX3se/IL/Mvf/+++Sq6G/xx/FdjuBzvziOdPtbb73++uvvfOMbP/4EyHu/fWRKpIJQjz9H7KVBAhvEeIDhA5G2yokxJ6sVbEwS8nQJ9dAJtAUCdyvMMPXTfb4vPMKsS87r9oE/F/ABnASkqKtqaWbOck3TOj1lOjXDir20kDFAVBDoJ4pxoarkB81LBn/IXPvI+q5mvfJKoVAYs8eQoAVWyhw1/IfLZCYn/24BZOy73/3uWGF5MqOewb8pqaXJHy5Y6O+/PlawCpWqeob8An0u/f2vf/27r3x3bOy7hVc++uNM3fnvuvYvf/YVC45qwbn/+3cL//iHIeVt6C7aVygDdfO3wRA8oRxCBkrHAQao14q+pQ5vn8QXblSwDy1lPZuppbY0HKcWc0yi/Zt2AByakIQzZKIuqtAwFTLD/TjPXp+ExJkxHA8dXZrBfNty2etf41eM6HA6/gHr+xH5vf97SbogZirnNZv3xLY1a041ypKrc1mdzavqz/ma+lmTGRjmB1a1OJW5qPEQRxmzPylkRFdVI4N7BEfW4XfaRVWXvEvE16FW4PfQGpWe1z5/UBXL2ay02lCtgMrPBiP9HoFz5saoRcqLPLZ5XQlqP5TpQtmRS9zPgkLys1eafKr668LzCfybmQrlRz8l9lBPAOnE5WdIIl4Jo59XXE8AVkDh3AKpsVtD/zKAWl4tFTTFVLy0g2JbP5cxguM78+LCqI3PDx0ttIIqSk6De3UEVwRCeYg1pee9GHvGgl5QaMtSeK2iS1nOwy/kABfQaVNuc0gEf2sewrth+HN1zOWgXq7fGRy1r/n6khDePu9vRItXnTZ6o5JBioTLSsEGJ2xTrbl95EZVfpDZxPDnWvR9o4vtOOQMGxW0CVhkz3aaKJmBagvFxk/PGl0GEhZVV1yLTaRJg3r0n6gC/l0WRn/KtLWJjEqzPE6HKHUezIh+cjlaRnTjgepFzaa1DNoP6a5Jh45q2fSQ5ojKZt3OFuiLvGiccNGp9JvwssKCmmcdsggbUfDghnS46Nbj0Eebqn26USneLfSnuZyMijWxREnmET24uVb8OLTk1i/oeZvAn2uqsZIEabHq5PSIxjsNBjA0TcUtFvZtAlcmfl2ltWIto5+iMctiM4Xwjpxz8VZFFfN+wCE48+A3gg7ltXOGq/sw/EnqWlvQXW1sLOPG38TuqIhl7w2it6ircxrvL/6xeSsDtVNctmEvNs4lHHCBwSGe5QMtOOcvntecbgMOb18JcEsU0rhEu7k8CcRCyRtI2Mb4C/zHEivp965Hd5/byvjhmnQLYFAabOAzJDlPPAECzEAjxRQU0WDbdXnSIMl51wyW2LqINRfVUYh8oavTGm3fQSOBimktI0Oc4hG/SFzQqA+O1p11FaehgWGG4E+x5oM/Uv5jpptiWlJZuotwLBxPzBTojmFTrawVKnodM3PlhevOD8F0ErhhmelRiJ9Rzkgguo/pPb6mPNOZqkG4PKTPQ91Jm7b58bvVVXldlf/tFfd3+ytFGkUuIxc/ULqN46dn+lwC0kVagc5BJnqe53CZQD4fVXTjDWIOb1I0dJLX1ZkC9QXdWJN1EDMonWNJLDLyeWrmp7Q5Q8SKnIMfpwLwx2c2ps2UbeMlZRcwedur4lQrlmbjUxFQKrw9kREDZMEV4B9oSsW6paUVbO2bdVRaHNsnLWaIzWPdnCn5eFQh+marw4843E3izFu5HUwC/zasj6jOwy5BDqJ3FcjVm7y7nftTA24HFaiWfAbt5rhzUNMzNHxunp6ZwMU4CsYKwIjXRjJTXlOErCQuWKSzJdgOVgWZDVhvOvBPucYPhIRKyO8FB6UfHQd+yrq8YFGdtoJln6Z1UdXLAW+2qWvP0ltUxWrfbSITTh360lpI7btBHpZt0F6PloW1MHHT+FC+xSTwZ9fi/rp8cn9QL4vL8TKUHYTxGcrZKw49FLjp0HYGd1B0S7mb4eGB68zqk8gBgOYTsMegL5DJrE3QYa2O+p+zKCeJV7QRgyU7QwT8ESCWauSVCP6jhq8TAkL/QWRomX6MWnPIzuIcc01asdGd965IKR005SFBnn63n2oosE+YU8i+mlvG40acHsO+Bg2h5mItPUeJ04/KOSaBf6uzovxV7GxktzcJ16yKomqoCyNOybBrw/q3AdpADim4G3hvl7jV8jZuyh5OlcdauUAKn3jc5waZJhrS8brvcqYsHH3thwxE7apODoHhT5Qshn8WjCkc9ATntj+lzZCL4QB2aJcZQYaPqfBuCx1em1fFAFGfW3GrdL/AjUlG8XQtRann8gT0vjXxcgbndMsSjjz7TMQQfa11NSaqLwnX1y3fezumvertj8BWTPUqASfZFXRoNXwiQF0JDxRwH7V1cd5NCTQeZM75Vx/R48gBULBrS8LxPML/PLHbiU8yddMmRWmwAcypBKoAf94Hf4hdqS+TwA7YUGgLIalZCGoi9LutRHjizlgzKt39Qj3uGvDFw52X3Rug1OFeISvZGpnHfQjZvG/Hw1tenVJqCf5OrPqd9Z+6cPsZP024WAENhe4zWLkTmlMmQOBT3zuCFGbfqEC1JO1fyTVYB35YgS2hztUUxbMYeL5mncDoJa8UM6NOSThS2ssiSz1iB3M8wB+9WKxYJKyJXq0tGHknHMTpmVEtRcoLFdr2ujCJqQZ1tyKwC3C+K4WSIbU0c8N2qiLchuN1dbrY2j/oxvbbnizSwOghF3jhDfkBJoF/54SCJ0u6iJbmR8AKIsZOhJlLMj1g6x5EZhDeA/Isx62US3K3ATGzZFEgmTyuP+btuYzIEvyXafAzRUpFxlSddSM/HvzBFbyJe5zyYOOMqjq2ezBFYsHyrVzALnKvRScGxkXSo9xvJFqmC/GwiSuaxocIDP4+YgrpuG+NTONSoTI2IrnoCH/bT4XsHvrR44v7EvhzHcc/61JEISUAS0Cps3PdUjHImGmaPbJcqkI0qCwF+blcRE4A1oluLIyZEP1ByMUDytA6QgjVJZoBFkeokYF+VyNgr3N9Wf0qiepDpBEpf+fwonrCxtQNvHRT/UrKRnuLznINGAyk37s3C0cqo8tTK3NjTj6wLrRD4gI4wAk1QjPY3M/7+/vE+UhY0nlMZjaA3MHw9/o0URyVoWyvskS9PqdQw6cJMW6dvimFaTxPA5w+t403Fw1/HLOpFPigRq2NZUgPXoRGHelvxemNMIGt/zD80SEOamD2YLt7Qs3TTICujkIGFuJKthPymRfZ+iyc93WgFTPy/6sQBAZKYCqlpMJDVpyBgrhoZXSJ5EHKZcnXiiGmB+Erp9SPFBP4dwP+nC/hQ1xhQ50nZRxmgNDr1K+SyWIQxtQKJ8iEYWKyUkRlvaZ/XgQIMgDqiG0GAyfIAaav0MWDmnMiW5sRseur+eCP7CwwcXiF7BK1BdEhYVYKkOtKOctKSdVGr4rB9RhMPBEVK7k8EIj+au7aqevB6eV0oT8AvNsyAakUr973pxF1VZaHE/h32Phx4MlKbvmd00p65oRFZ0rWW0KBjh0ngNnojRUj5VDhPYAlRso5yx9HQZjSqJGCFsfUmOdtj0JYCODP++DPGnM1p5W1OaaSsisRo58nRhXxHiww+4kBjedKNJ5po6ulylKBvk3ejHiHnuE3drPidOUJr6iY1wC6WfqFYm47k8Bf7DD4PToEFyqvRpvA1TeB2F6HBZrsxwYx9oXtZ+YnIQbC4V5QYTOI49x4OJCReYf+gNuuQAZYJJ3r9CVvfrm2ILI08OkaP6x41cL0aex8zmBqENKS8xYt4sfUJeRS2HNTous/1qW8negKVINOLt/Ec9FsXzGoEl7mJm7GBgFOHfdI9fOk44S//yC6mpMfZxL4dzrys0L0gdQLZ2ZukpkySqBe0nMRMUKAG/Sm6lhB9aa2l3yDCKfPlAIoFzDHGZk2GculX0NMHyhvfviL6hzvRGH4gkr7E41YvH/apa2NTYu6356uhyZpC7bgBfc9uPeH01o03aditS/V7WksF68aIrofint3MAn8u2H8NMoTUHqcSKoEgOrbn/JVb/uFAmUM2kjrXvgi61lUnrWgqyc0L8QPyDWtGZ2wg96kMIYBTch3zRR4pzOy/abOQsIXB/WRi4wDoejiMg6h2iVqWBU1SGALupQSJDkyzqLGWd26UnU3uI8Zf5jB6TL+GiYQ4tJGsA2+Xdwoun8zwZ/jIuY04HhoFWbK1HD+M9jNxt81Ald1v3wVbwL5POunh3K+7JIuzlsatWEojdJ6EycROExlJoN/zFGEbQJ/nAl70yiLJ+iOgz6MgekjukmwFC0nUPhCaUpk6wYMeQxO3RAxnyFQrxWGPxkQpWmjy5O487LUYCgOF7/rCzfo6OJ6VjduMts/kq7g58tJeUr8/VbBSwmR8q1+N1VFYINHMI9MV3BGwJmqKgVZBZwORWAetQj8Z/sGcgCkrDjtoJ9P2QtTQBUlFlJKQwvkqkarMhW+tgw1vca8U0tACNroz0YNoLgFqdkuSJGnm5k5gdyZGmh9JVXXjNAh+BC1Xyk5e1kogdCx+45pq+KrsnCJSeC/DvAPm0E+GovEQWZoydfOzGlkYwb0J2SFYVoD5ofmKb3Uz79Dbq6IS7JSLoXeNvnRjM5m9akCDr/gFTCiVgom8RDQId+cwnEgYi3ZY2i1iOqbOFPQ74z1U0z+hCri+v5AwJOa+8iTn3a68ii8GdmWirrV2shySVV1nXUnIQT4sh289ZKu/lauuI9J4L9+8I8IR3iFMqX5i1ZgumR9I2NsOdg3Z/AoAYl1u3RzbhW8KILiVtw5nmgJjUGoXl/AzjDwOXlr+dqY6cBT+3V1xjF0UoqGHAOdtHMg8R6yDO1pVc9mJS7UqEqCVIaKrH20jvBIUSWi97XjA2tXJg6SlG6Qr+Yp/SzXGd0P1S0I/W/lcgyTwH9jwJ/l2IARz+ZheMPyXAFK/1JKZA9vkxro9hXcRVrHytflxVAgqRU89AfHbKB0JWUWFqCFScF0B1WOLY+Sr9FvtZdLN/GywLH5MVU0MgXAPk+IpPgwhQWVzXoUDnweOgoQDwDhUw1bLyvOFChc1iDqAcM+XLPSsXtd1sUzxQ3AckvgH/btAhoVTxPABFEzMLvEYcY4ap3gqULdx6zXSIcj9HxIAeNycTBheN46kUEGfsEtOjO/jIwial9p52ZsM0VKT2xrRjVmLIvUx9uwIqCpzggtE/CbPdDgZeEEhjZeIq7Jw4faU5lmTbPmZqq+jvs4icGGvedO3m1dfFuW9zMJ/LsLf/+MNqkhCZdS60m1JFCDJ2du4t6utt9u5oOdn6BQDDd70umEbadzCJSsn7NMB4z9WCuPqlPinO1W3DiZBdD+IwXM9YEX2iOlqZctOt2eJ3VkvDaX0YOJLtzt/XcuFgqa2e+RF3wxfX8IVxu7MVMFBifrFWFKQZt/9aq6Nfpa2PAZZBL4r0vgc/VUWFBEoMtUzl38yOJNM1XPECVrwCaeK54s6ZWFQN0h8l0zBZoCgAmtYMpMZNSM5XGMfXQ7XLpOfzozOQc0B3+PHesclJj7GpQgtV85gQs5bSVAXyYNh4I9OC9OVyiBm+U6p+W5SNw71yzpR4vyYYZJ4L+RbP8Vt4w81rAV3zCBeoY0rbxCLuXLlQzyhfN5z5wWMxcpB4jUQPJ2YaE0bTm90yIEh0QnlyzSkoi0KlLs2tiM6uusAF15Fs5NaLgTjxIsUuRJOQypZsE53ZvI5PHajnNcVxWNmxjXjXdkeZBJ4L8q/LkNgn7qCsMSuPpywUdYiKCN2dDg08K1gaLoTfCENihedQnEgOzpypLN86ko9DvM42c0zfY5sqY2miGFYxJxzTO4sXugnWPdoMsU6WNE2jNMTXXYvA/nxwKDMoBobrydk4sMk8D/NtH+wRbguDZ8xPJhNBRXNHEmFRB38U2PGQGtrDITQNox+x0z3n7mph2t+Xmn6sppM0iId/zYvCHmCcMNX8fESuzlftz8B6fnlpBTDstG6giBIaKEJaLQgjRjNY5ezuV2MAn8bxf413exgdg6mShDy6JS/r5ZdLYqDJbUwM1UdSSQFc7r4ssW75j3Zr9imrjpYirC/HE9AsVrOoV83orucDPUyg2rprl/6YwWDYY6TbwIMXFfD6ridUmqSMTuOckwCfxvP/g7cRIJDxPAfaHIgLewL9Dvy/LiwhFILuUxw2u+UHNLabyGuJGGP09zwpTejCyqaWOKLUPGQL16cILm4/rJ4ZS6Wn1cpjm2hBNyksvKYDmua0a/nwcLVZaifuGNorDIMAn8byvXNxAzJaw2CSb+qIYaSDLRheBUqWAQ40C8XTgxo+IUk351pMYrJvRC5xVaS8A3hH+Keq1gMNVGF1Q8ZQiZ+zZtuU+qEJCOV3ykPLcZ2xztTFLne3ItNd1fuw9AW3gab1+Wc6eZBP6rw3/jrASOjSL+kowAGCGlyo0CaQVuk3acxEflXQ+XFg8WLs5noG9Q5k2LLhLTF6Sph38qlfL3HdFuVpAnDd3YLFqoyyuKEhphpjhfaoVzME1X93JjfkYDFz+Dk+PCdyt0At1447Isb2eYBP63p/av02ykjyCOBv36hDdfmA81TnDWgYZnfWaMqcpYLZVq6PKG/F/MczP5QkXNVKZvjjlRngjqMnW8zcCglZVwHgP+uQZ7pFd+QJufqn9alIXHGSaB/+0Pf8cZIGXuQBAVjdLMTZuktPhQ6wTTrSHma2gF/M7VzLW/lGoS/6Rben/qVyoZoN8Fc268L8TTT5qxabWxJUJexkltbmVbvwNOAKmkdpl/OO6LNq0Pi7ncawyTwP+2hn9dZ1FP0UHF/LWlCY2aPaEmOk7BAJ55O7r0tS/jHzS5AaCt41f+N1vDpE8vB4Cbjve7y6Df5K3CwQWc1srny76L9DW75bJd8Hq5oCGkG0ffyQm5TzFMAv/bGv4NjQinZaaoliannVFwij8ghKOX/V7/UHCS+5u1f2CynWn6+ib6P/Mpj8AJvdhoJyMfg8lHbspm41L4Kzf9pb6GxOpi5o3LObn4PMMk8L+t4d/AiKhPCWTIINBA3yiXp0+NlAbhzgjsE3qyE9Z3thBfYx7cgOVbpO6SzfsAWB/bIQZRx9lStN079A848igy+T/exzAJ/G9r+Dc0oUPhvayE08KVE6PQRNf2T5b0jxMI1Q+vZPnYNJxqkunp/c7oPPK3NZzSBexzkhToP8d1l9QTvCEI+qKhvvpnRfml55nbRhL4ry3q54yHhvC8ugBsHKedSJgh5C+aXwX/JH1L+/v4fgjR1PPfWoAW1KLLqQx24Q0G+ruVHEHGF7ID3349l8t9lrmd5A6EP9dRekuQ3cK6M8WgSgB4yEtjvDtMoD8E+lQz8K+jlOKOJbbTeblKp9CEW6yEK9Zj7swWJnJyfmYPsv+O/unrci536xLDJPBfZ+3fKSuA4yLSp4Fp6WgT0I2p38E158R29/E7U6nm4O/rzUCpDTiHNgEF9m6vrcA8Gy/23mIaUWpiqivn21+8kxGdT9lQb3//siwLJweZ204S46eVEFBwhmGw87n7E10X1czSGPjC9e2Cmov9uJOrFR4PoBxdqpRwWkvyptkHh5k2HNfOxWHcEAJroLUdHR8lqh++dRzp/ZPXmdtRbn/4d9rn4xpHPwL9RpwZKvgD2gQyCwcLFnFiVzT7Q5tCqt8zmXDEtDA3X4Emu2y+zHKB1j5RbzvQeTHW2xOcDM9xsMrffmdRFoSXHmduV0ngX49nLmq0dZ1X4cE9jwVMHwQJJDp8Qn5A6dq13/3fPgk6wqurfX9mi7f//rVS1VCnoJISW/z5vOQL6/vrCYOtGwI9IbjGC6UVpwc3RGJFdDHwNv/0G5eLMlO8TdX+HW/8tLQsuAbip0uGjGYMQhFsHRBklqtIMplMpXJ1YWFh+tyJkdEvf/kTxaNyOonhVeGfciOd9tjy8kylgo6Kjm3APHWMPFFiGyp9rpnsxcrMCKnh7YF3Kqrq249eLubk3OX7foa5zeVOhT9X1wqt5RUQMniIfqfa3YE7lszVhV8/+K25ixMFi4oGgmx/ZLibfGioZHNxH1/xAJHCxMTcwen5qxVyTrwUHIGrKwcvd7VJ76vdFK5+egxaF7/9xKOvX14sFouXP378OnMHyJ0H/zqtzzWcA7RyrldyhKAe4F6tlkoq0u8L89NLJ54ZHbMhQ4WhHhBI27rNdvgW8e93B0hz84Cgk6GTWoXCiaVptDNMTpbQJcF6EHF9l3fNXEQXXJZrfQv0flt+AmEfwJ/LHb5v+/C+BP7rD38uIjTdsF0xtwr8iRWfnxKpljeIgFFTmZ8+OIIU/HlHv5Oegv39jcYFeYW7Iapy03Efr18h7+u3CK6BiadSIIFtoTBxce7l6XmYQkNFp1tCq4RnLmpasvdbbPiomaOvvrNYlIuyIB/+7PUE/usA/0B7vvBkq4Z7u9+c96t3YtSAuwrYQdq0NImkMrM8vXRzZNS2NZ84+l1xJdVYfBXszlf9zdKe/V/UrzAsNiYH8b6rs+zRZ06cg12BeAvYSNKdsl9JWskTXm0zJc1biOkHC+G930CuL1oDuZPPDyfwjx3+XLPbdBTcuUC5bqPDUQWPjekSKPg3Xz74rYlCwbHeoZcOkQYdb/noaVnhtlj9PhJ0C/C3fVOno9t3BlcgcTVM12EoTIwcXJq/ejVDnAW6LazO4wjuqmE7yLGrIMddevuXX0JOsCC89Nq+BP4d0f7hFhohWAfy/+G8lO9bEs7AugtKdhHmQctXlqdvIg0/5nirIQtkFe0e6nriFfGGKrL6U2YqMCqmSds/cjtp9DsFXy0Qr71TOG/JssdGR0dOTC9Xrk1SVwHvCtCQWqrziMNde3zqP7RxYBPxwpF7X8rlcsJhf1HvvgT+sRs/DYZKsyvyHTnKRYBHXi1BaBKp+ZfnJiYKFkUHic6EtWqoprAZ8fzelOcVQBxfaTrbyzfaQVL9zayN4O8V3GC03+mzSOyj81bh4tw57Cu4zoLY0Fnw17JwYVIFVTg4AfZosSjIxY8H9yXav3Pwj9iNAy1saUYIayU3MEm0/Im5UWws21pQ0dsRPaOCLIUV8GbyZhRU/Qa73TzXP1Qx3N/YnGpyKfpfTOd8OcuAx64CktGRm0vLM5MlvBh04gSR+1n259cCeZAsHYTnK3rQjQtH3ymiXeCx0wn8Y4F/ROO8CK+AjtzFCgyMGicBVYFYzbcuTnx0/vx5i9rxSBea/f0tKfM6ptoKf+Aa4qFIJWWutQZ/k0cQrdluQ4cGdlhD+oQv2WyaDZrCwc5E9wXkKnz0cxdfDmwK2FCkEbEyNSBpE2zJqTWgGwR8i3bYo7/3PWQGFV+7XUygDQx/J7AT5Zj5gnHkSeFwzbUZpOPHxmzPc13NoK6fesiHdW39sOsGB+unbrJJYzEWiUoenJ+5YaNNot9Zd80FPe1nvjY/fW4EUmn4jeAjN7906/YOs+GaxckLJ4hUq5FtYWz0xNI0DSCpZCXU80Ac5rPDvIZqL1088uiiLNzazgwn2r89+K+0KAIBeYjIgyF/cQLiNXhLdzGYWtV0CE+BWDWQ473KtmnUMRB4RKgZ+/LNmyeW5glTAcnkZGlyZhRmPfb3RyyAVPQChRM8c20yU0J/n6ksTJ9D7rkbjvIv61QMwrs91/0LmbwvGj+aXvA2BTHkKPiUFDGOkCcApe7C4cEE/ivJoAwDD7lwTCcYrpEo1QR45SRak6nMzE8v3YB4TR0cbFvhV41DNhGnDM32cuwOQLDpQJ5o9wIJLy5UVJVYXXhRIpDkp6am1NLktRtjNXMlw6pRXsw0tdElsMlxQoIc/OrVhTfn3zwIq91yDDqyrvpbAnzdBhgdUHXXuLOdjY38yg2cVCCbAnkuel1sAp7V0UeLMvPQpQT+K8Ofi8i8OmpedVX8FHrw8+fmCKsGPQhMqQFrYFV7ZpUAzgqBRJpXsv1WvGYjBT9688YSpqIB4aCkOkggVjHyGMtsGf1Dl497kWPLuw6e9fDnfZ0hSJdbHneK+50pVZwC21tnKdkIr4QSaIGlE888M4avMsy74FeN1fIN1ELD+0cMMN5LNR98c4HkFHD1pe5uCflyHk8hePstWV78mQ1tBK0v/FUxT9womNJGzRrQ8DgkD9GaEcqr8T1ebHco0VMXmwN20NZRIjxC2PtN16rBBsDc9Dx51tWq3zEUgfSZJ3VTkjvhFPrhZpZGLb6e6V/vVjfELI7V2Jo18rVJlbYzcdSDj3hXrZYw1XRh/h8evFjwOHfEVyD7ghJ6fw22wzoHOqg0sPPN+3YE3t0UTkzPL8/49gSsv4wzZ76/mCu+lsA/Gv5CBsjjoqvR1Ayo+JFRN+9KjACzfzW71Z8dbcZL9R4n7UgbCNWgkyMVP3ITOGXXJqmKJ3gnTzZfBvUeZhq7MzFg3uLCiNsI123d3AD+qXCvTyU4n8g0a9bcgqr7xxNxHiFPOnLhgstBxdeKvYUTjnEI/qyjPJDeUOpjRg3zBnyosRxt3hhQO+QJucbg6MjBX8d7AsTgYI/6oVxOeGQ4gX8E/HPXSsgzhHgNelZjdihWA0rel9VXWjXlIyLf3jCgQGCSUgQuAqN4IeNxBFxWsWOR1QfCXZGcMLhuVCu0CXR/YCCe0/12BXvfZfwHhnbhOnd7dKakiqEaM44WP7oVMPmpvLsvGEa1Cly95emDF0mOz1EnTiA0sBaadRzM8JZB72sw2AtbwhJmpGbevpyT7xtO4F8H//G5kYKfbdBcLtN9XM0GPxRvxKGfHgZKfuQm2raRLzdJFbzhuXMSJYk5UJPYhlW2ThflPB4+dBDaP6f663HuFLNE5hBc6CgAMNv2a2VFQTYM2pVehvFh/v4OuN4sGyzO8acARc9ZKE1OVpaXsJ5xGB6a0590RXJH69Elz3gEpXJu5nf//vvjub+VwL8O/oUxy6/i67Ojbdx+JZTXMd2MP3HZvnXw5Xm0PdP6KcKT90J5eccZ8bR8NpuNolSEqmphfYhG6WsFzYM77XZo+qhA/f2pht4p+aGp/MoSbB6K4rY7h8l4aA+wYTivqgdy30HDK1zj621XeBMz3Hhx5urCuYPIykQrgVI/zNjQ7+xZ0PQRt7m27O++8tSu8dMJ/ANyfVfhE9uuBwBfZ9E39QyoKc+HS0+QHf/MDcjhYCu+qrpuqy7WVfeFmnqE62ZXyk0jdGUOegZ/2LrXIodCRplw5tjvXluyarRxboqGh2wc1K1phQUR6t45NgT/EAkqtDv5dgS0mGl5JmX9zUyfmxsds62mQ0fNeGJu8FRRTHii1vkXx/dcT+DvT3vtspTgdIeVsvrRto6i+AHlRmqQCwZxuUpGrfoy+HrjIpCAPbFirbDHLPV3OhHV0gzpbeLPs5I2t/0p6FXyu2NkUDvuBRpiKLh52X5MDrWXJyvfsmpkrjtxIpyKYfDMpx0nINB4p65oJbBoI1mBomscYT+hMgOBBye4TGMO/f57HQwURM9pct+S68pgt8ey0AawZzCBv2f8IPg3NO7DeRn3Na6dxAdTMlZhdG7pazPXaKyGIt7ReuFqpzr9yLFcJPxXKwAheR4jc06Dnsweu8Ak6O8niL0xee1XbJPOaQ9EFP09DFMUbryGED55Am0Yn9CKL8XzTqHvz4mMFwgKc2G5aEstBH/O4+6Q+yPqNM9SgsqHmeXpm8+M2X7StBN05kMuWeM2dW6ja/q4rK+Mjx9I4B+E/2q2pkLtGkfP+7Ku53GdH1byVMurwFnUXasmChaNallZj8+V9TVOW6WOHse3jYURzZdM8uEZPtjWQbQ12BCE5z2qRFRwsV/BawaKA6xJVZ16s2A5w/D8Shh847F5d1g1pZxlpZXrPButCqmu1RveFCh1EC2Fq5BnJqFoGjjqj/KzGofiXGvIHruyK3cogb8L/xV9LUVxSLqmG09DpjyOyM/gcA2NULqua1DPNyVRjf+k7CrN/zgaCiKxnvkJrYY5nf0+tWfi5w1d+OfR4jyo8aSBiR2eBBPQ/iboerJorAX0tjLzBQ33+ee9sLuzqArnMgbu9knxHzXAVHK6woV6k65c4E7LIllfExcDs8Znlpdu3Bwbw9X9tXBlUCNOqqJ4q8K2C0+N564n8CeRnzrtr/hDZ7yTTilMjELW1ce7Umk3KV+PKdbtvreK10qUOrdKF/8VOn+4X+SnkHqcw1pRofnj/gCdwTp/8aphZCbHNN4rXedDrX8CVDredswFaykzNSUaV2n+zPTH53F0tKaNLODpFmy0a45jVlmpieEFHMvVca7IKiC57FDoiNDJF6YPgpuAPQVn0nD4WdKwl5swA3ll167/RwJ/cH3HLWc+NLEreUpucNiTo1CIQdJQqoGz6WKwrMVfyFvXlipaxzfVBmp1HcmyZVD8C3Nk2LvpwyYdeg0mPyhoXaxYvkblTuMfPrTX8aD5v2Zr9GDgZY5kgFOhZk5YmjvGl7oNzhkKb6Lbko/u2bZqm6/60GkgeRB19yTayppWjJK+L+AxQ9oS6wHT7fViO16aEwkl79tGPvB/u5TAH8GfGpM+W37k4K87iVfPrgnwa+sCHPF1NeeaaphO8ABzjaYLZNJ0v5IKRa4g6TOxUMVjTacRepFZg60AtAo+Cdo+Xm4L3YvlGXgttoPQq+1CRSRnmi/U+NCQI5PyNayLMyWDzXPSagHaFd4pFw4JRDSE4yJ1BSFquXtC5ur89NyIj45qBjY3agyNnd+16/kE/lvHz49ZFtjyN6YpgRKDnrbSWM2F8/XjjGl8D+S4Vl0U+GxA58RWD7X4zUCVCc/XxpYgQwsB0RO2ySvEn0UQr335738ZAuGpQE6PVl3yz1Su4Z1CoZx/C+MfzrYwqgU7wDmjtHnLmpjHp8o2N8crtEyi+uAFvP5gKi2q9QPpBKbTHiiwEICUvrx0cwTvCL7IEcW/feUr43+SwF/wFdY1LreOtGO4Jqtj4usah+e44P8l0ShVbviIGv2hQIdWgLgM+KVipuD16gH65tzMMhkCRkwmZMSYCmXRmBDwzFy1fERQ014wqBMKyw0TVPk6ChpabMjK0knPcd8tib/3dXTwoO4UzoaA94TKwj88OEdIR47Xjz5deepHhjc5/AflKdcF9Wz56IfGrc8kgNBGg7xdDsb4zE9ovhhfv6eVkcmiWSMVZPWwEIuZyiBjpt/d+G1tJJMZNVPURYYNAYd77BpNkfGj6tSbFrJ80D5hwyoxrXk4FGZUgBPAEyfbYy07FCKrUMFucJ76wVLAh+2YSmgYTHOep5NXK5XwfjBqkwCqpn3lxfGtmx3+R7gQvNd3Rltk8EQKtUwpVU4UgvVbNDqLo7RaYRp66OTxWxEnbR/dTUlphUrmTQ1MIUf9g5nDL027dS8asmMWbEA/rKZ+cJ9PIMMGa4kpUUVOAM4EAAUoUJsJX45NZ1S86jgyc6yzOyPXxLYQ2hCc5rzAyJ7/9W/khB2b2/jxaf8mAhXrofqBIeOnNhhqpaDV+HARucIT1xVG7RpimSwcCUI+Tp9OoFXWRq+qmQmblHKl7C//CiHB8fMVkhAGzE8gqwn9GR7pC7vDJ6Y9l6H4Z/O6cXWZcur4cHMi5GZaF6/CCBh/dx5KCs1289bWNYjHPy3TvikS9AWCyNGrOeGRBP4hc3UDwT8QMwfvTs0AF1NxWhWmvIgeifKPzCC/nSU+gpRFMNbcCD8AtpDRp+Ytx3O1fuUGjhqZ/MuVZ2isE1n/S+gIU5YP2LyN/s41wyDFfNFy52crzvExhZ+3kRtcxYQgDDziC5NECL3J2WznTcUo0zHgKZfLeUipvfHS+GObGv4iV7eLshtgC4ia7II2b6hiMevz+zgkb/L2iUxVpIwJ9Be6OGVptg/+vIW0uGE5AR9zZPnL5FfaQXUZh5BgV0Cv0rP6jG16pDm+NpoRdQdEZbQCKiNazeRDhSq4qJGvWefnIRWQxzo/G24FxmW5zt+4xpZQ8Nnq6mX5gc0O/0AKdqNYPeFpJ7qqThe0SI4ysuT5mjY6jz1Pzhn0y4nzlobNHAf/hYooir9ju9nbmckx8ittLlOZwH4zsvX7kfmjs2IGFo7pUBzgbx2GHSSbRSPzcsG3Q7htXcBoQm7lyGTJCIY0u2z6hFtqN3qp+Hru8OaGP9eN4OUaNwBkch8saHx0BTGY/CMVHHnnvL1LBCvH1yaRt66KupiZcFJe/FhmASd60Zdz6tSbtjMrgNcQ1CVxBhs4bhrZIgFQl8WMnJBpSrPrr2/VoGkXM2QEal3n967cuWanzHOc+H3hFsbCvs0N/40mTj5Z4hDSZkY009cFK1gfrhVOZAwx8OBZBF/CcaOTuhS7MK9LWX1Jc0ih2rT6O3w/hr+J3N2pgqfKR1R0JD2DnQQSAUI7jDWtsu76wgtAx9U1pm83ClCRrWl8VZK/LoFrWwG02YQ4tIkCCYl6IFls9kq6+KH8WKL9NyL4cayFBPnNoNqnpeKKYmv22DQy+cusR5YBX1O/6ni4/ZjCzxcWRDbLTY2ZdDNQzmdEB/7IJRbFac0N5WvIR9AlHcd/TMesN+2Dvv2FtBTUq6XpsRpPWi/w4Xp1XjuItwCvkZi03l4VRzxvnF3PAhcV/RMfzT2WwH9jQR/jDMd6Sicsvsa7xHa34SyGZM2aq1QNbGRkJbpgcLOHhYIb7sfd/QtXdUhcvenWBNReNsh32C5C8Adlj3cK9P9FFdYK0v8ksEPXnjai6nmWk3xGBZDuKhNW/Z6EO3cC2XpaVXWp7PNpuA1yj3FHUHy/jLfWMf6ZTHVvJHlRVSfnLBqTCTG3sItZmJ5EbqqEl0qW8wg34tUCoTfSAk3TqhgIz6w6yjvsNksVffCfFMvGXM3NHVsVFRSlWEHmvwLOL+GQ1kaI/ud8WwDL6aUZYBV502ACHDp0jRnDqQ3eYIFl2iRdV4vCa4n230hxHyj+U0vLBWhqGC7fsKGHAV+zJhYMQm1wmS84RZYXp2Yg4uk5CloBwRlpOnFecxrj1KaNsnjO8Yy1a8jawYYRCRTxz6gsWAk0beYsOsUcy9B0svcBtiijNF2okbWk1BVJ17SRGdWQyut4nznfP8+rkJzKDFEtyqcT+G+kgKduqEtXNI+X7681xFVncxWn0sTruwPGLPJZp61Ac32tcBXTdsTMqFPiyxeQHhcPagplAgGv0zinmSnS38rkKzoO0IuVgkbCn6RknEeHmgoRL7GNZlSXR22e97p4UdI0KTDQJuYNQ+x2BCicA6bXLbHBYB+8TVUWksjPRtmTIao4c1PzAp1uMQv1e/nCOdXQ/YvGq7rRxWnkDyseJ4ifuCpik118s+a0ujKnVbRLAPzhiJjWnBevThD4wxqB4A86qiSqY2S9kOPZmjUfNIBouW4ZmRCktRwQj+oq6JCTciKjGmx5g7FKcJgADLijx+UE/hvDMoXi3VHN632LLQp/Y37SbdBxdVkf4Zdjdf1NLUhEsysiiQeR2CYJSgKGM3MU/vyVCpB6xIM8FMPDfmNaGR0ZBlJWEjNjdAsyKZ/0hOGSerIBHr6uZqbHNB/HIkDCxl66TgKhTaWsupRXIQ7JhVflW5uQ8bnaYFOOi3e3btyrjZwwP2WUrt0ELcr7hlP7+DeaNlrB7bG8jlL+yhFRndb8/T9sZPdjvgJaVSecJcVb5yCHpZIUGPrPmsHwv2qbDnK1gwZNWumZEc3X5AiIRRnRZWCT6Sr0FkEc6M2LVl09AIlV8aY2tqwaLrlKom+ZCzij67A7EAf+e/L2BP5doaM0SFSybBnZ0DMTmFPvL8NSnOQrD00GSyLnywuwvjpzCG1OW94fKrxtF2amROLfZSyTTjm1C5jCDPBPefDPsuoIiTIppoL5QbSuLHMCHOmUu6q0CfjzMls3oRqzIdSFgq2BCdTvVoS5RTkmlOGgP86ThB4bFQpalw2Yg/BPLoF/12gMgaZoEqYnS8jdnS5ENduFnQAb0AczhtNcxx975KgWFdV5K8AGsgtXKVeNVc/VnB9r54w854RBFfQqa16UssjQWdBsp3gMqX9HxevqCU3xlTmiHWVSLHORfXZhAUB/6Zqp0BKDIC2uVtNuZFSdLbOc32hj19UlgDdZ1o+ui/mzSeC/0vPFgU6k+VVCI/P3pXHaikADg7EbmaqYD0TyfOsHfcwDcdOPfr4wJVJc5jMWrxBzxLYyWP2qE7Q9jq1N68DIZ42LtrPrkCpfYtzomWmNdzjWuGc62hu8XG4I/3lRN0pLFnQeUoJNVEz8TrTz36ogyyqP/c5wn971C4yWje8Lzyfw73TwLTT4Hf5DqrBsqJMjVi2quysJJ1oFaKmT92J2vnAP7XnFikBT5n19GQsZGJsO+TDWOGHiABKP2T74T1WP/rYkYqNbX9BSZBBSf4ofcZMKki6SKgG3Vhw7y+XQKnRG25dhG1LnJ6waH6jBx90ooNGIphWmqwaLHOu61rjrhn9Oko6uh/mzWYwfSWr4iDlg0EOjNtxHMdx4C4/BHp1RDV0K1wH4HQdOFxdwHaLX27WQETmHcp/RaMoAJ3yJM1Dgadce8wbxDzh1zHT9VkgGEPhnkUlT8SpcSK3MjCpGR204tyxtxOJNnwcP9FIFl5BBHOigahhl96bEAX9ubX/KEfNnOIF/BzZXyd8bqy7SWRnVeFqW2F/XnlIDk19npbJD5a8v0IGDTM2PYXaCE6SxC8R7hVfkjRE3d8sfVDELjcCfmFYnKPz1aRK4xJb7tyi+ceAIJ4AdBwCyA9q0qIdIPG7ujWBZFzMvB0oU0DWZjgth8mhJVw2fUuDWzQEgc3EkyXin+8nfTWL86EER6Wg43Jfm6s+d16C7oGbbGm1QRgfowXiGsV+ZnMyIF3ROx3/D6SyeZyeydO6ReOEC/GLq189bgSlh1mQGRjHCK6aMyhWbdjDktYpKBmpUHDfb1k4QvnRWROvQIuQdhT+fgb/Nw/QzVhIzlfPB2Y3Wy6LuY89AN0LJ2eTwKpBgwO58gaTCXLp2v7O7mKY9UsHJYGnFqFhXTB+yA53pvvmzGbK+ZU4/oh49evQMiKo6sziJZP7L3/2oQEb0vvLKK+hDgX6Bf/azf+l3r127lsmoZ47CkGoVHyAo+CeZyWs//G8KhQn0p79qwd/+7Ncm0flU+JtM5o/RKeC46Mhf/+HJzBn8i+WJ8+gMv2r9m4mf/YcVuCr048m//y9/Fr+uMDY28R8yR/0XOwNdlsfwZcHKHPvo32Z0UQ8LHoLsujqiOvU7c2N1s+ioK4zsMxgVwFE+kMT6hmasA8dW0l+VH0ngH7/oRxZzuZx8/LiMpFjM5dA/9BX6hL5+cXzXCvLiizks6NUgx9Ex8Hf4j7EcPw4fc+5RnkL/P7XrxffpL7CM73oRjoV+8+KL9C9y75OXwk9fXFzEBzpefP9F5yhwiEUkL710GeSty9/4R//4K09d+QrIlStXzp//x//ol++994knnnjvCZD3Xn31PSQ/eOONI2+gf0fQnkRWTWnyd//SKEwJdGZUmynaHhGbQNYcHsHtSzR2fwdwy3GMRSGBfwfgr+Yuv/Y4yGuvvXYfkf/4WSz33ffII/f9rfse+VtI/v2//wf4eyL3PYJf9/F9f/tvo+8+/vg+9MV//Pjjj0+G5WP44UMP4a8f+5M/+QyWw4cfovIH6N9nPvPFwz/1xcNfRJ+/+MXDRF66BV9+5q/Az+D7Bx6AV3/xi7du/dqtWy/duvWZX1t0BC+hPyu+/yMv/siLL46Pj6MFuGv8xXG8GFeTHKxwWE/nz8MuZ+MxYQp1UWzerIFfLwIdiKW5u/Xj/1x4Vd6d8P1jv6+imvsHzB0mOETyf/vDYST79qEP16+nh4cHB7duHRwcvD649fntO3Y8vn///vvu/68Pog1rHAtsKn+uUbfGdNgQNa0wbRjB6On6LAD9zKKcwD/20IKuFh9nNrnsu3T6s4+9nyOr4CvIT1dwdZnJK3hiHjBCyxInrYv947LG9b/WZev/zoc/5I3OyJ9iEqF3/dAtcFSeuqIpf13xFeVMzBiGjwXHdRX9nEP9yeUS+Mev/XPr3E9+3wZbA9cf+TVwxP/cGkO7gEmze4X5qiHmua57wO6YNE668H358QT+cVP4S7nnE7Vfd/t35/AmQCNCkAuGOh5xdd0f8+JwuYNA1ygWE/ivjd7go/lQHvJR+fEE7lHyN28hV+Arr1g8abeuadpNqOKUwkQGqQsBITIi9rJ8PYF/jDQ3yP6UEvg3lOcPoxXw5xaJBSm8aV1cUI18mMojdQP8QPs7Ij+UwD8WbjNuowRlTWImgf9Kcvow8oXPWzYtK9OsZVLO6ZCcfHyIzm0D+ARl1uhq7POOhL9zVBj1jJnEpVwC/xXl0mvv79p15VfpNI4aHtJByi1Jl/RueMJY/5fFX5afT+C/Zj/K6y6PbP9M4vquHgx6DBlB539Vg4kDtqZZIxmVMvEaoz/WdUEYAN0t+7oj4R/wfSHpWymeTvDdhBuAtoDz2l/HhFNkAk2Q8rYVZsPECX+np7DxlpDAv30JzjHnuLxhZP7LeGL8NLcFfHH8xaesT6Ayx4ZMwExVFVeIdcYHf46W3nGS+IPcawn81xr4dKZxIdX/rY/+8fjfTKDdpBfw4PiuKzaeVpZCO8BH0BsCigKyzc38Xnu9WFdD/3cO49OniCSnhEJUSzNjlmV9tCuBf/Nya/yp82M2rg62+RpkAnQop3EooR32gzn9deFSAv/2AsdO7bbE0t6vUCNl/5sE/i09mPd3PWWNfUJaS0ODuKuQDM5TC4XrbF0kp/9e8b7E+Gm/2po8GwPPQcftDuxXdv2NBNQtOcEQBYIqMQU3frFHkRMAgwK8YcGdw383rZ87CP6cN8stLxpGZQJG/5AyVyuBf4uyb/f4+FMWnzJxt17etAvzTkvr2G3+sBhvCcMJ/NtR/RwdwFv6ml2r2TaZrcLzifZvIwh0C20AljOMiee1sSXIBJBZMR01//UfyIcS278N058lsZ7MklUzvQ77fGL8tKr78cf94+NXkAYxTbwAcHegDJ4a74Qp47BUo+BvyMUE/m21C9D10swI7vDna3FsFxL4tyPDvza+C8rCSLc4MjIYOiSWWbaTLSG4C10reb/94e+2nsINXqfetOwa6W0GvQIV2nIqgX978ggkAch4MdKljte+NVUVxbr20vHGfn5ZHrzz4d9km6sAydD7xp2kSJrcS6wuqpURzW3r5GtqY5/flXB+2lRROYz/VGBaU6Wk6pRSRad8+NqmNrkgVnqV/rb8HxP4sytSzUPRZ92AAbzOGFB/Z2PFtiaSuH/bBtCt8fNjeDt1O+zWtIl5GLLnlCj6hh3EAX90NDX3UhL5YVdOszvpFzLZZ3KJjLZSvOdEe4XbWuGHxxPt37bcPf6VsZRvqD3+cmy6ZIhlpzDeXQdcPEGMrvW7uj0Dn7inpXOv83ndqIxc0Uxs9PgmEeGWzbxljUxeS/j+a5DHxrH/S5qfkllnigmdf8m8A7dHdBD+7a8FjtUf7ZLxf9vA39+hmeMkt5xLF6tAbajR9q3U7sdGD6QrTetiJpOZTPr8rEV2j5/n/cMtqRsM0/JE1tFEgXTY2pxiTnwjdyiBfz38pSDNFkaZVA7SUXQkOOEf6cxr1siMKk5NlY7/zwmI1yC3xi2e9+Ef7QD90MxdG1kwnKqwEO9kLcof2bJdqnm5fRucQxWXUZovWHSGFZ8KzyTSrLkMnuQmqkmbq7XJ3vFXbNwVzpmWR6fe8BomQ0gtxK+5Jl7A6V3qdb7x4N+s1hD1auYgxr6C9+KU6Y1jxFaqhZP0eDqiejyB/5okLYwXbL7f9a2cJungW028iec+RYbpIiaKcE2p/7fufPg3Z/wEx5cQvU8U/5iGm9M4Bmk/sf55HPuxCtMZwxmAmzQ5XPuzEl78l9Aemox8NYMmpnYCOkOUSWGwV7YLpXfZbFvBPf3D7nD+Nz78JcmJb3oTqHUDKX6tRsPR7hBnmAsHJRqaNleBAbZ02A+Ykgn81ybD9ws/eteoZvOfpHAO2Btzj5wuvqaNZCgfFBrLwP8Ux23AnyOJr9MJ/An8nZAamXOYZw11ZiToijmzC0nUH1s9upsZwJ1TE/ivUS4V5bczOKuO4G76JqaSCcbABlJFB/G+WdttwB+MnzPdKXm5PSI/TlRZKiOrx8Dubgp35w4kuBQFFP8Y6dHkbBpsAv945KflYkadujpv1aAraDC3TuhwFyuqTsZRStn2YxoSCf0UDyfwD6AfAXrKUEsjlkaSu2ROqBOIQ8Jr1nnyCFgvG4Mbp2YS+K9R9jHMSfn7MGxPnS9c4RXTm/5NZ/FBIHRspkS3gDVE/WHSI6teLibw99CPsJ+fUtXKt65ozqxaEn+jkzphbKJlLZVgGHRw5DqbwD+mFVCUj+osB+0DChqeUhkgFtJYMwzLy6+lHACcBzav/4acwN+fPReRyT+K3F1eSZnBnTeFrVFtdJ605CCrhbKBJAkHPhP4xyDPy2+dgXx7XjdmJsjEYJ5XAtYn9oKvldSyO/ieaxP+r8qXEvh7ClzNALWBxnd8zB4IdPJ8zbpxjWh+TMIF25Pz4kWJ7R+PgPon5qRaulbQTDIjj04Khp0Yj43UrJFJA3pEt1cQgG3/vH6kK6yfjVfu4qht3GGY8HtEVZ284QwoDzKaKQP9XKlKA52R/PGkw3Mscl/ut3TJGURRrdAdwK+LiE2KdoCZqo6nRZLV0rophDTWI5sS/p7PChZMmcNWzwQE3Bxlb/pCnZB1GV1G2C9zWSla13AI/gnjMxYZL4r4HsN/eUOdPEHKStEmELBFQSGNZNYyLVLijNxnNoXxIwWy5QHKLOn6MjltWYS87NP+CgR9FJvQDlVKvG3QiDKBf1xyOHdEZ70cJKTeLd4ECwgtAMVxhhWqlWZwaxSuTNYLF+oMurJZxBldafaz8eDPeZ/zeRV6VYG/m1LcarsU4ZvYkGspLCElUy5zK5EME/jHFvu8JL9+walsgaBCGe3MyzbuCE0SwM4jIunHiQVVd0sCuEAzpmx2ZT4Ep7+U2xTw9+p3vaJ1DpOlRKO6DLwej8MfMDJNTLcVJSctvELnjAT+MUluUXXqTGmzT2KaemRb3BgRk0N53tTQAkBecD5QCMBS8GdXtH70rvQ53xC2vxRQ/OQ7Ed3Xc5bGp5Q6T5cnWcabuNgiS0x+x4mIGL6TZH3jUv4Ms19+VZecG47zu2gHQF7wqMbXhyRwWXDhYEZV824jGucZS6tMSZL0b2wa+Ae6xkg4x6VD1wZi8yhB7INyMWtj5/D0HSlMk07g31EZFl43JC/EQII6ZaAgOiwsapqmMDsauQFmzZ7LVP1/1BTFV9L/RTc6HW6QuD8HI3TcLQB4Peh2+oIJ/gQjz9dGl8GrkrJN3dHE9o9RikVAsq/fAB7/JUHV3U1LCzHhnDCQNVGhNWFN9+uT9L/YDcrzxoA/bZXB0dHGpa+NYW+XNqlyuA2E0IljapTX02SjYT0hPcQW+5FVj1TC+fdd3VDfnNC8LLDpbwwBDHTd4fP4n1v9ipDwbyX9qHzfJoA/5+W56F3MnCvUMKGTFLJ4d9GGMi5gM+tlKXzbpJWSxgn8Y5Md8hu63411zXkw5g11frTmdBnDusthRvOmNToD8WkpmN6JcAE8+H+8GeDPkfQu3MWyaGQyo7bGO22VKK1EIfUssIvOVw09j+NuWe8+rhhGSOAfqwg/rtPCRjzyLkBtyIuGmpnQal7HGS9HaSJ/bblk0KgR53jPjV3fM7nHNoXxg7EMjE5k9SxP4BAC70ukO7QSvmadqECgk2TS3bDxKuhP4B8z/L9HR75L9fDHu3e1MkeIiU4xmEMKSplQF6/rMLx61aZYktgVxv+GsP3B8hFVo7RkYW6DgmlsHqVNIZOWl0rYf3KMpchCuuh4WgL/+EReVCXJC/zUN7gSRaMyB5NFSA0G3gdssIIgUa+NLanOmIxV4hZnii9tBvg701gyc+c10kg+1E+JZNArCPw0esa5qUMuqvtbAv/Ohn5UMeR5+Zo9Y1NWFKuTNyxw1Cj8sRmL9wHFrBUOZkrqVJ4Usa6g/s8sLm4G+OO2DVVcwFjfpRAbjbx1UHXHKtDxr1wS+Vkfeaio6lLEgCOnxoL4rqKKvGBwAkz3SSqErwXk9BGky6bAeorcAYgCk9TF4p0Nf+jzI+G0+bmCl94F/gjpWGIDm8TUxqYzqo6D/Kzb07yFrkCJ7R+r/O3iGQp/rn4P8DV4E43M8mjNzwPC6MdjMmrWKJ6XLUWbQGQRGX92h8P/p2VVLxvVGdyUP5jcwnW8dJzIirZiU5mUJO0Vn5zOudq/viQ14AqgPX1mwoLsJTxKrNH6PXPWWsIdCajNFPCECaFC7QbpZ33hX4FA2ZgzkEJxjf0Uj0upNevGpCq6LeTbLJ/GpIcE/p2Gf9gR4KAkABaAxit8fYkSeri4Mlty69v98GcR/L93h8N/cPxaZc6ibGavaRihDZp8bWJeJbEer5d/e8OPEvh3Av5cQ/i7HK78lKFW5mipEkniewE9E/dghf6IPmvWechZSX9dvrPhnx4Hze+jtMH9MW0TCrrIJGXaOW9NrTMS+Mcqz+cyK8KfdT0AkhbIIyfghG2aCs97Y6fwKlBgAYxUqhAGCiaScQxPf/QOh/+3xwt8KhUIcdJFoBUOqlXfFOW1dYtPGJ8xyqeag7/b7Y306Jgu1DB5i/c463gUD49WwLWSyjozArxY9p0P/63j31X88Hf6FmowOUeHO0Irpdk1Tc1J4B+nPA7GD7s6/CEvz2WpEQRhoEJo6iBtUQNUlhnDcMtVPdbDE3c6/HdZn3zitUvCTdtMHroEOC6Rv0JoDYNPE/jHJ/cVKfw5btXZayRNmeXI2M35UbsWcn9xVbCNFsByuDscJ+nv3fHav2DbXq88nN21fyWjqqLkUfm5tY7K4RK+f5zymAd/bmX446gm/ocLw3TkBY9pwYJVXCRP2lPOOwvAifzc8fC/DvD3JXk1rTBNLP6YZ4Yn2j8+eaioii1PrqNPUzdm5rwFYPpmReIgtzOQgVQ+6UfucPgPItfXJhQf3Jt5dBmBv+yLm8UI/0T7xyS5y2J7ezAeSqKqk6NazSYugGn6uV0wi+qqamAuBLs54G85vSH5mjZRwZqfC6bC174KksBnrCJ8Q5Tagz95kjCZ5Lwzh9MdlYeTPSZvjUC0Gx8/f8fDf+v4r9IUeE2bu1Yy8uWI/Pfa4Z9o/xjlElR7NTehjvY3dELXmIsLZcEiHs1DFoDXI52nNR2FZcgFs2Wk/XN3NvwHd2mQ+zCtgjccjTBAJDY++Ce2f5xyCNf6Nkm19RMgXP1fxomAgxZv0nE8qWDwu2YtqbqIfOU37nD4bx3XQPGPLpMov++uSlKrcx4T+HdHHpTVlm2eoCELTecl3Sgtj1q8EugLAc4AiFb4daQO9SN3OOPz+otX/pzQPsqsm+AKKX0pcX03kuyT3xJZ2uO2jYl1NIyN9ZuhLkxotYjeWCQMVDLeuMPhf3r855ZLVdE/DJwNO7ySlMB/A8mg/C9WpjysMJg2sA1w0MMyc21U82UC+l3WLyyAyswdDv+tQsbr1xNfmDMC/kcT4yceeej4mRj0EZ3VxopqtXJRq/moEKbXzWzMutNtf3mqk6BP4N+BsOdbemzwZ3FnG+MarnZSnAmFphsP1cbvdPiLCfxvK9mR+wEnsa0ZPytkATAdVDcyS1aNNvggmTBMjVasXQn844F/Uusbj+SKZ+J5YoHyPVEtLY3xNUXBhcFOY8tPrBcT+MdxqxP4xxWqy7WX8o3OxXNuhpMTDXV+QjN9CTC0FKzE+Engv5GkCKUu7JpNH7/+pwlhCS0A6GhvewVh9p3v+oocyyXwv13k+fFH9XKMz8XX65MMbs6MWLY7JUPZFJGfBP63keUf527tqH/HC5aAmji5ZDkk0E2g/Y90zfV9PkHvWuWwfHTFFidtLgH/VyJ4wXRKhn3lRxL4J/DfKLJVeEfsXHLSCwMZpWlLsxV+7Cv/OIF/Av/1ln30k1w04lb+EY1tccdXY6GgWRNf+WIC/wT+Gybqg00fTuoI6t0tIJvNSmVRVWcmfm78pzYB/LkE/reDLMI8d7az2h/sHzylWcpDVWTxZAL/BP4bBP1P6Dg+U+Y6AfqAG8zBpOayePT4307gn8B/Q1g+8qssLV2MDfT+Lk71GWFWLBUfT+AfR9g/gf8and+i/HsXvMGzsSt9h0Inef2BWFasHr/j4Q8lnR0HP7qVSdprDXJdlt9WWbY7UQp3aehHj38qgX882l/N/f8SGLcpn5VlVWS7CH/Ogf8HCfxjgn8xgX97MijLb6kX4ui31NKGjeD/vx7/mQT+8cD/zPEE/u3Ibx4W5HuNIyLLsVwXjR8crvjP8qUE/rEkVfQzcmL7ty7Dj8m5f6fqdJZmd9HPGu90ocnbptD+CP7HE/i3KpceknOXVR0/oW5jH+B/OYF/TFyqBP4ty+mH5OJbR0TaoDC/DvBfzCXwj8v2T4yfVuSDh+TjxUeP6joXDCB3z/VF8C8WNwH8u1LuIh4tnk5A3ST0H8gJcvH1Hxi6yK6L0GyYWnwwgX8stzOvZ3IJ/Juw9n/mvqIsy8V33j4j6nXUTqmr8NdV+YHE+IkpiHYm0f6ryOAH98sA/Zc+VEXRp/izbl/CLNct+ONBMEflQwn84/F99aPFuxKERyr8u/7Ga//81vvv58bH3//eX377qIrA79PCkpTNulXp3bR/JP1D+XQC/zjuZVa6cKb42WGQfUjQRwZ9ecn9/vowg/7DX6/p7eA/H/ai5sNrPF7o2OjCfUdv5xD4FgwPbn1+x2uHdu8+sAdhfnwXkqeuaLY9ujyZEfVgh23cgiT2UVNN2T/iO8KlBP6xVBJJ3IXFXDGHBPb348eP54RcDj/48fHc+Iu7XsyNF3NF9HNZRq8pFvHLXKHf0b9G9kGxeBwOU6TivOB4US7il734Ihx614svoqPLx+VGAn9KrycgRee86AU5uOzxF/ER0eHG4VTH647T+ByRkiNSLL7//ovnX3nllV+1beirY82pU3nOz8CMmrHTrWWgdiXsvzlsf5Yr//Z7b/z2b//2e++9+t6FI0cyk9MTVywNxAL5ysV/+KdvvPfee0888cSP/zj6d2+L8uijj9577xP4r3/o3563nCNfufhvv/FoneDXkz8K/9w7HJIfJ/JbH8EV4iOe/+g/fPjEe+GTo5MGv28g74G88cYbR5BcEJGomZkJGK1JOovwvPWmKuY5d5AstxJNufPw70rcc937/HQD/riZjI4fqa7DZzFz07KdptqKPVZYUEX8C31Ngo6hG9MFrEyhTZ+1XJ0SG71wtQM5X6ijzvBXXrNKqr5m8ZpLieqIBTPlSGO1T3gL3Qb3gUR3c+sK/MH2UYuLm0H7d8uclCTWq9dQb5BWMjBFHrrpzamiO1UpLGUQ+Az/wVdl8hP6EV6SBynjQRz50oTmjqq1lqeI8eUdKFoifw8/YMtl/QQ0PuNx90ttrpRnAxfmvtb/vVSWok8hSb5pIRJX1tWJGnRTJiPFFV6rTLHOILoGpg7XnbaU4tvyZxP4xxZGZul0Nfg/r86D0oNBImjb521tooRgmnWXSRMsCr9tkM06n0FrlSzenVhuZWLIHOkLVorAH/1fKOWl2LZELlsWJy1nsihCP7L/4U6Aw0s3AW4dyD74AvQP5Q8S+McMfxy+ZtWKZvPuPDVFsyYRTKW2n7QTD8ezyPVJzRtSWCiJ/tk+bZoBJc2Ze5vir5REKTZQSlkub8yg6zUVEy1WvAhGkfnD5rl1wr0P/u/Iv7kp4M917Z5i/Z+VdNUy4Vk7FrVVyUzlpfazOs5+gT8Z0z74z6n5tb+9PN5PeDL7RJsx4tUMU+q0RgbsOtds4OHKEru+oi92JfCzeeBP9X8W2btE0dlY/SvavAojhblsuwrPHckKf2+M0kUF/5aNPLc2dGJTbc6BJrrYOSM+k4QDCydvzGkwU0uBu9GPzP9pQ2SdgsP10/+GXEzgH3/8h9XR4+ZT/f3wuNF/Su0mKWTlpLU+btKewOLdQbVaRmTXDH+OVef5fnfgW8Fg1zrr2zc1E9fUZgpmyoR7AbMVlZpVIfqfXTf0c2xZPyLvTuAfq+aHFtoSizZ7PD4Na370zAsZZ0zt2tQd/uu8OKkRrxcd3rTUtcIfw1DM2Ca5XJj3qeox3hWJjFeE8dKKTfwhcIWM9VX+4EI9IT+fwD9OzU+cVL1iKRieNOChVQzKsVrTE6ehoLw648GfHzWkWOCvFsjcQ7Rq8fXGF30HHhvCf8UyAf3gAyOFoBVg1DLuN7huxo/4jsAk8F9LqCdkQxANL2ZoXNJBP3IlfVji1ojVqepFx/TnU7UlgH8Mb0+d0xTHoUDGfz7O0lsIfyL8aySvgOeLAv4x64x4Q+uxCXBdyvluDu1PB+igM1ULNcUZG2srKfOGKkp++LeNKqL9p0pUUQOStBk9HvWpzmu24/yaBTXPxgH/rNtkLYv0/zSyfIjFBrnAGqQB8SmkdTCBgO55NHcygX+cpg8Hpo8xonlxGbTdj1UD6F+DrqPDSSa9zYW3SmI8jA5x8ooXTNUmxbX6vl6SzvXY1TmeN1PExEL/astqHub3cl2iZIVjafq/ED6VwD/WiCcrscY5ynXADEcb0lLhx9surMg5jGXNHcxWQyZELODh2NJHvGP92Mhck+KwSLJZ357HilXYtswUDTGZ2oxaxjvmupj/kvE9YV8C/1htH2REzFguHSelKLxWMurbdXNrgGnZGOEVhWaTtYNGPNFDjlW/RYx/zMy5aazRIHfbiPu8FlEsTdQcDiDG/6RKd8z1ECOXYxL4x6v/xZLl6GZs6IIeza5V6wdt1qrFK85gQq2ix/PeEDjn3QtXeNvg1mb8Z8Pt9DlIWBsQ/uFdFix/fhJS1tn1CH9KekY+mcA/XutfR24pIbZDdidl8ieqrGvbxlLNJOmGRt3qFDb9Y4O/6sAfues08t9+jNah6NEsOK3qYg0SFONxNoQ30fUbEPtZD/gbj3atM8GmaHQC/yO3l1dMhbJbTP5mlfDcuNjgXzYyFP7AobGqbDy5U7DMNSegpJh8Rl/bbpXNBr6DeV1ZGv4H6rNDfzMnSjq3HrlfZOx1ifDD3OFjrenAZEhIVb15yVjDTSD0c25B31rRT/7cOEgD9MCiXjLYmAInHGuM1hSFZH4V5FPk/bMgYsmT4D4OxgmPrgfWW0F1CKu++H9w8XQgRMFJ4mRuMYF/rPBXK5qT6TUVhCFsmnCxTeshRylNOPC3bZJQiwP+6NjGknPgFFQnBFoOSnHAH28A+eooYX/SJWwddML/PmtL6jT8kQ35W7nHNwf8j3Qa/vTBiSWNdypcgN9llaZENuZJVegk5x3fUeGtSZHAn4sD/tc0r4jmfNCpkOK5SfguVQsaznzR8Jg2bZQdnZzNdiNER0z/lwQmgf9an6dvfJRYPU9rWzDLmbcymOYZc1GHXtGcAmJFK5TE+HaWYA1ZxYg1GeuFgNB5CprCO7Vl6FQzKr1JMG+3O26AJKq5lzYN/CWuY+h3vpcgqUMMHwx/xVruxKgqyZh2yAmYmxPbKQCWXlSe1064Ojle/HOSJJauaIpTW9ZP9jC2u/Bn1XuF5xP4x+LSkT3dmOOd0kaAf+1gNR9rRI8eyhjhXfjz80ZcCQU4gjrtOaXYa8dphpjxj4sLKpZTCESq9ScNNr7QcDMiqsUck8A/hlSvEzWHer6Uk43l+dGSyEoxPk16JMKbd7S/U+oSB/yBqeqroQS3PW74c86J1HmbV4AARxwlZMTp/vEWnVwD5Dz62/IjCfzjg796jdB53dpehEzYyuP1e33JKVzp5dg+az8NZHjFqmV6EcmKGu+0IcwKydJ3YZyweUdVIDtIGzF01yntbB6M5mfekpnNAf/THQx8ck75InIba6D7SQmKYtoV6GqCLdm4XFMSXjVcakIqZY4ZbrfMWI4PbCKnHF07WF1T3jfyFNks3UyQn+GaitjVwMW/tF6oYyQIGqCWJF2VFxP4x3BDJdLJjHAdFJ5WYdlLOJidZWNDkAv/gz77/IQhxQl/zph2/QqFh8h/fDiUKP69MNMYn/IV7F+pqHl6tmzHkl7E+IJ5pn9NPr2Z4N/BKLIEfIGRGoQyeJNY//yIKmbrY34xmFkQXvJUZkWXuJhWGK7CdCsJMCBLUzFqDcnf0I3D53IdDd4pCJU4rqMdDkk1HidJRrGbts/6Z307FvOBJ5avHrxiY6IwZDMR/scyopSV4oW/k/TSeJdSYblR/5jgz+LFRePxpOA3Zvi7rkqWQ94S3S4JR9DKkFBrZ+GPqRf6h7nPJvCPSwzSzpB34A9ur0N5lKRYrX9xBveOw+0CzQkjT+uLY1KMLGnHQ9NROPLPxp27oCWhXFbEZTuO/d8PFBFgP3fU7cWHLutnigKzeeDf0SaHel7N4BaWNJChmBAzcUOeUryBQ+MGiS1htuQ5Ix9f1gsfR1/wwb9AeA+dgCOHtUP1nOZEynCykFKkOg1/SX+1m1HPOxL+brwxr05aGlHIUMinmNa00Tg5vGb4j1L4g4VS0fOxmcrEsdZpWBWnr61OcDZc+KPrzldHNKcNKoT/bWh+kuW4Dje91S8s5pgE/muHCzZHJklfhxQJ/fD8nMr6DB4uLt+UWP9V2yRTUniln1fFeOdhoTMYlutaoOUVM/z901twwFivTvA0/gm5PEUbCRDEO+CqsVyZRcr/tU0Gfy5e6BMDFj3B7IXqXI0SPKF5NzIZDL2Zp8e1Dk0Ie+JSF2wp2LyNG0VlY+tFDoA0boJv0U86Mc9h0nMzUGwWrlzoj3TD0mwTp7HBb+L5r1WncGqM89/oWO4kDXqWy6La3bDPHQl/YhVLUnXawg8O0kWmgtCf0TtkLqB/eeOc5hjKNv8MLkePGf7TmmuNmwUC/45F4WHQTemKe0IT3UF+BvZOjvVXCnOxaX8otzyiPio/nsA/lkCkVF0mFBze7WNO+qN1JmOZ96L+iqJ9TSVWRJzwFyc9+Du0n47An1o4ojEJBFbFJCX2Kb4wqUrhtBcX40mhuVW3lf+dWeuL3d4xU/GVLmnE7e0U/J3Wzlj941ZUcVrmIc4/ejfXDLZTbqjk5PGg+QOOfIIToEAyQ5WkoNKPlTeL/N5L+xL4x4AWduouYPp4UluKMRJfj35/PRYdERSba01NY1Ed0fyLudyxKIxr1BtLtulGm5D/ZJGmeP7TxubdczDH/TCTaP+1BI6dL3GBi5O1B+N1pCRyXmOH2I2tsnHD47vxI9W8LwIbTyQL7WfTdMoLwHGkc9qf9aji1Tlc/ItzJwq4T9W68H98vXbFLme87qDAJ+dr2gRfVN2eCyRujYfM4ZFtHfI1qmOmu9qg1CVGgjznqP+MV0zDk8h/x9iyWTLLXaxOUCVi4uBZbaTkNEXl3M4PMfm/+utd5brdSfB3d2QajzOAgEBZKwrkuzKGZxe1Fo1u7qXQicc31UVnufisA08XWw5zFZ0DmhB2ji2LXVykLqCEx3GgQJ9ouDeYP+oZFwdUVLs0zuhOMX64egOUPJe8mrnC+2Y38tY1leXWrI0b/yVab2SqC86vmRb0YYtjZkDYFB+FtUzhP13Nc50bwuJUf0nQG49Gf7AZZM0YbCCjl11r9J8EqvXuh/zvENvfrdR2hmHpkwWs+mnO0tamVdE34LQToR9jueb2zl3zVJcG+JGMJa+Ykp8D0jPXsRFcburcILQp06k1uFJRif0f43xh8Hsvy/sT+K/F7OdoShIKXKBXPeWf2dpBOryuY6YCUGR8DeRuGB3xsSWYGaz4Iv8dnT1B5oFwaNEtWI79Tzq44FndUlx0bqAeIsPu1VyOSeC/FtvAGTFRHXUnIcKsqtpFwg/rGFkLjlvyqtxti5S6cLGfRcQNpN0xF0aZ6zT+SQHKAoQ/8dgvPPqxgJskcVJcGkWSWP2NojycwH9NNjk51FT1nJbqx3OazX48wyJDyced0/44I+vTy3r8UMRIMy7yihv7nDbYjg5fB/MGzwFnkdFFxxb0A3FWK0Dvc1aKiwGNHIwji/JWJoH/mncBcQpmWCj9Du+et69kcM8FqYNzSjgJmf62w0jgJ6okExbjYEQH/vOuR8MDr4hjO6z+6ehfdQRa/+AbSjvYxVr9oquXhUNMAv+1+wB5NfORlnIMEaT9/7xiYHJYh+H/jEngj9ad9rIRP/xJfEVX+f4Umb7I87aqd8Sf4ST/ZkrbBYzWFGL8g11paxNVsexY/2vfvfXvCY8wmxD+g3HDP58pfWTZODgO27WZ0m6oJD6YzUodtBKqlonn4mL400JcLmbt7/T55x0aa0bsJPwl6r9wpOW4RcKfZOuxtTnVObmXcWk50Etfqd+be4zZlPAXjnDtpJnqQ3TkszQ1WfBle5GvNmGIMUXfVwKmDkkvGmjiNUPvxFlYTCsdNW1nSgG/RGaHxb6s6xq0QPizVOBtxRkvht7kUvUCnvvLeauALPemF6RjuRn/Qr7MbE74y0ciyINc688LK8esJFYnagp2z2gE3qqKHR5PQmLjFXf2Fs+PGZ04C0XhDc2Df6jPf+feIphxamlUg4pRPPqlXzG1ZUOSON+UMScR0Aj+XESsAjYY8agsM5sZ/m1vnoG8IWzR0MyTTgFSSIMONd9xbECpy8vuVBeev2F0bKWRbhIO/M+XxC4NRsPvMUPD/zyOgsL4DlFiOV86sfm2Xm6eUuLWieuwQeB/gfP6a6w1RSkZC9g0Jt0A+1OKtmB0HP344qsTWrjBFRezLULOJfoTX9o1qN/pBvpJp5VpzSQmZb+C2c8Z1X95XvaxmWM60yX1M7L8m5sb/iy31vbZJD2jwgQXh3iGfNDaOcMXyOig7SO6SS8eOrCJHUh6Ofq1NGF6U46WIsYSdygAips/HHQqKPpJ+HNSDK3Olo0q/YgsX2I2OfzXmpOF3gSSZJQcQiQe4qXUJqp5vL92Gv6SPsM79NIUocR3DP7Gkq/R80TcnW5X1C76VGnUZX9CzzDNquqsx/1pWYNJnH7k+PH1Rf8Gcn3X9niM0hi0VyOZSUjQWJgRzGU7rv0l4wZEWenA1JdVly7TAfiLGa+Ih9e6Y/xz9A2hkxdwky3bmV45Qdj/XKvqnyTUsvoP5OI+JoH/mlGBlFNpDnQ/ru41MfpLuoRVTLbT4JCMURwPwQvAxAX1cep/v3HNiVXNq2HTJtXuGP+09T+rq5amuIMSgExYvSC1a7deMH7j+CLDbGL4M8yHYpnFLbYlti0HgKPUrLIxbXpdHSDos2D4n90qobg1ZYkwJN14TKkzySiigbMS5vyTlZbSfkjNd2HutK8tmI5H30G/bAV7wdq0SjbApvxeL0ED9NUzReEws6nhP5x7K4O2zzLHtjdb3YkZSWVjxlfZi54Nf8LIrtmnaHIBGhmcCyL4t9WOwZ/D8J92WW/Eu+kC/H1fiJj9zzvTf/k/h+nFQAxqpsKBY936BEn/QVHYwWxu+DP3y4+qYD5KtIFGa8ChBjaYHxlfExAeF5uzXZpDCBFBF/4KP2JIHYQ/crMnfSNOr3Qr8u/YmCwefUfYVHgJmFpGzBP1LzW3U0tkgtJvyMJ1ZnPDfx+z76Xi5TM6gF8qcy0Hz9zXiqpv8hWyTWswWkjqFvyrFwn8MSKnDalDzYSI/wktLBTX9r6mlrsIf3g4+Soe4dQP9P9+XP1YIeHlJuCPWw2AR6ari/KDwwyz2bU/w1yWF89cAPy3AVdn3og4WeB9hr+t4R5oXTAKODJz1zId+PNIGUqdgx/t8+/AX9FuQLefbuGfhJDzxhyhnEKIAcoqxjLqFMs28/zgWZXFsqi+LQuPM0wCfyQfy8WjhtQWO5LmikV1lHeeCHF7J1VO6k4+FAk2R5x8m9Uxc8QxDI0FL8PMj1XZ7hl5dFagmBnVHPJnf7/C1wrVqXwzaXvgxHEI/Ecvy7nrTAJ/bP8wj+dyr6psO3WrlG1lHNR4SvAk4XBoRsB1Df7GPJ2DThtccZ2Fv6467eRg6qiqdx7+WS/yQ0hqEP7ph5EJ8L4V25rAmb4m8M+Vy8aRV2X5JMMk8Hfkeq74jtGezYBLoBYsd6oE/uJGyd/Pp8NzmNH5b9YUpxECVCC2icfVrtP5vWhYlPeAAKhlDLbj79SDv4QDPHkyZs/Jr/O2tlTNN9PwvCzpoPr/bJBJ4O+Xh+TFNzD+OTcfvsKtlLw6IwhFTJIxJKQWSbG1UUNkO0Q7CHmi5IINXyhGUzvmdLgdxY0TzpQj9N+cb7fpeIjXrak2nG67mPuP8A9t7bKE6gT8E8nLVEic4xVzrC4efUuWH2eYBP5BuS+3eC8eHu6UpNNIaAP4e4jIi9Xzzuw6wL9tWxmd6w78CRyc/m64vMwy9E7CH98efV5zen3CkK98h/otr+gC0/CnSYemmVZFLRPLyC17cfAP6CfXrauvy/JhhkngXyeXcsJLR/Ws5NZMrG4L0PK/gsY7hk8/5hursSZ1G69B+pB1p9QFN7iqSmxHx79B5tWf47gyKXYb/jj7ZcxoOPOLWVborlsVnO+oMw2d4ByHNb9QvMQk8I+Ux4TiD3RdatiMLdjVwAkDVudgBAPPO024tSWV7UowxNngwfH2qiuXjM7DH7p4edUFYHbE10+x2cvIi8aSpUDdPZ3nxFukr2lwKVIlVub0C2dA819nmAT+DeS0LC8ePaKX2Xyklg3mxAj8y8ay5tINoBbbvkhmynUeCaTQFUpdzvMeBfma2nn4s8aIb47MSLeiXCG9DhVuvFNRDWJV9LKXHSCeMjy6PASrjr4uC4uDDJPAfwUG0GOC/M5ROrLT62zJRuk2jPCyMUnKuyLafnclHAgUTNcLxAzkKbajgSa85WGSBd1ukLfRdfiT2yuqZGwmdn55k+fHMmScn3sx4ASXkb+rHn1Jlh+8xDAJ/FchQD8oAAmIY8ts3ajBoO7Ht1cvQfmd4oU80Q4sdQsKhAQs6de8zubmRMAR7ViaOaP5FnxG7zb+OVJDpKsf0eoXkwRBT6ii5O/8LwERVz36TlGQT7rgH07gv4I8n5OLj14wLkh+rc9FD9TRSQTcQ5+G/C+3zXPH4U+iIMZSDdcY4DW4pLKdJCA78K+6DUUVXlswWF9xDded8heW+uCQ+CL0N9xz3WAl7+5LyEE23l4syrlDzMaVuzbY9fzMoiy/fvTMBc6hjoU7CZOlgH5dLZiUbEDMf3T7OZbrlvonDoZkFFzbJ6VVOkzApE6NMeIVvGsXjTzLdXUDcLMumO1EC7/wCJ2rmIIk4SE6rH7h6G/IyN+9xDAJ/FsJgh6W5T971RBFva4zrdPvBm2rnDHnVpnwNq+YtTkDR5i7xPSkFnBVM12WdceLD+mUL5jw68Z+CqoosSzXPeoP62W1kO9F6l5SNm7+UMiIeZLdRa7Bq39WlIv7mQ0ud23Ei7ofbZnfP6pe0DnnkfsgQPpdGvOaSeGv4Aaso6relZiPzw8HA8A1/WFqvNhZLUzvhehy/k3gmCKVy7HdhL9rA5Uh/E+p3piBOpGZKrOiKJ559S2k+E9eZ5gE/m3JIaQ6XrpXhS2Ak8rBBYCTrQ7vhI5wqVmTutTBaSdR6IfmT0vu+FRbmzO64HXgYKsX+Ve0ZdLtp9vBT8JxVqct6O1L6y9N7e9WDVX907dyRfnBHcztIHdt1As7/VhOlhfRHiDpEEGW/MmdPEl9OjRnCADiqqPuoYBq/9KEmXLLDGb0Lqw+3O7EnVuJjL4Ro4sZ3/BmJFYP4r5zeJJCjbcmfviXX8rlcoefZ24TuWsDX9vgY3JOXnzignFBD7aN/avVCafdMJ5fxGsV7HV1bQEQH0TCUX+H7EwICN0gnomU8w9Lj9eqet7JiHU7/g/4n9BgAfz3sYJlXXlq13iu+PFp5vaRuzb25Q2eRHtA8XsfZgxd941bHiHqz0GeVlHzpBqD61rin2Wzkl5BTqhzEYVSN0IwpMAH+z2EcoAbqtNSlG67v5DSrY6Mff2V/+PKrl3j47n3P/P8Jea2krs2/BU+fwBtp7nFy28cEXVdFyHhMuMRbgEH2gncX4H0ou8a/CUE/+Wao/15ba7aFRcUTA7VMhWH6MS/TBjeXAc2uMboRyKCGGdKP/cUhv6B0/uY20/uui2ucvC+RVmWj1/+jf/16NGMOl+wUzDhlkQdeH40I3Y/8wl1B9WJGs06mLy2IHbL9RBh2pDCU7bNR6SZYyNHYU3Rfari6xLwCPhq5ujbH37jclEeHx//tUeuM7en3HXbXOnw4w8U5eNFefGlf3R+dHTMJsLzWqEkIixmJf+27KgoqVwmP5HK7CrqrPnAX54evKye58kiNAn9QKpHiydlKkEDAn+kV1qW/EK+9/2Bk28u59V5Dd45Xni43QlkQvJ5crwyfi/OO/LemXPcpiKb9S9FW69I5ciRVx+9nCvmZIEpPnTfIHMby1231+Ve+tT/sFjMIYWz6ytfOf+rr7zySqGwVEKmD/YMuiy6mLliKzjhg5zQUaNrl8CqpcLYGDo1OnlKOa/CiXW2Q28SQK8iQcr+937rh1+//FKxKAsC2osXP96+j7nd5a7b8JqHtx56YE9ufBeWF3/0Pzz6xHvv/e9vHDkyhUTsuFzAH6cyCBIzP1coWGP2mGV915qbnBIRVC7oHT+/oZYm59B5kaDtzzo/UzLQRalxnmPqCMgbP/TeEz9+7zv/7q3F4nEZRBCEXO7Wyf1bh5k7RO66fS99+Przf+O+x2498GDxOH464CHL3RA4DQKCXBTGPXkxJx/vytmPY3N7fJd36s6+62KxuHj5oY//9v/8M5d+k7nT5K474D3sY/btY4aRXL8+ODi4dSV5cvuT6J8jz29vQXZQ2e5+/tSO7Vu3b/3gg+3bf+HJJ9FRP9i+48ntO1b6+9WOv50efbt7Fvw3O3b4voPfnv2bZ93f/MRZ32F30POTz/RIzvG371jlLT4Ptwh9/mDr1kEQuKfDzJ0sdzGJJLJpJYF/Ign8E0kkgX8iiSTwTySRBP6JJJLAP5FEEvgnkkgC/0QSSeCfSCIJ/BNJJIF/Iokk8E8kkQT+iSSSwD+RRBL4J5JIAv9EEkngn0giCfwTSSSBfyKJbCz4Dx6XGfmb3xT24jL/b36zyc4HckS7gb179+558MD+rcldTuR2gf92QYB+LrFK7sD24eRWJ3JbwH9Puu/bOxtK787V5EksL6AvXnjh7C9+9dnn8BLYm2wCiWx8+D/J7GX6dm5bm/Sh/9BHLAyTfvJhWAB7tie3O5ENDv/nhb3MwNCWHiRbkPSsVbYM9e5ES6Dv4W+iBZDsAIlsdONnb7oXYL8lHkHHGRqYnU2n02fRDvBAcscT2cjw3yEcYwYwatcM/OAxtqXTdwsCM5jc80Q2MPwZAeAfv/QM9DFPog3gteSmJ3Lnwr+x2TQ0wKSPCQJ2APYltz6RzaT9kcwOpdPHGCGxfxLZsK5v5+Df07sFGUDPMnKSA0tk88EfR4H6+gThweS+38my706E/6lTQ1hWC/SfGhhooPt7AP+z6bQgtD/xfjjqR8Nb4zzc9XY3p8Gow4V+1lnDbzBwsug3sm9wOJb7hHH+0y28Gl1e2wtj3/A6w7/Xyei65IZtkBv28sM76X/4Jb29vfWqvwfr/970w8Ledi93N8M4RCL3Z/BNm/vJjr2CHPHjPe0dzH9BAuNe4X7fawLrNPAu/D9d8TRhQpXzY/RPDuRVhveQnwYOLMgCc3/Lb217rv4CGLh1cpQi21f0X6V7Q9Dl3d/mY98TcQ/Qp0Ndg/+2bUy6L51mGCAxoE/DafQpUshh0um+3oGB3oh1NLATqf/H2tRuAiNEw6G9O7E14nj4iO1sJ+jZ7iUPRnAAKQu5oMLf6pyhA5oMTn0gqIOF4PuDNYlAu7915S9H3Sf42fZo4ydqDe8V2oX/Vv869iuNS12Bf8+WbbPPCZS61gTD87nn/tXDZ9Fi6Y20ggaYdyN1bjNaQBDSdT9MM8M/Jgg/H5Ptg473E+gt7G79YIeYu4lqcK8L/Z+WQ/BvGvjhN+pXLg3ezIHAZQ9HHAUd4IC8v521lWYizi1Hwv86szfqOocPtK39mWPDgfvgrD65K/DfMrStF4Avk009uPcGP/u2vb1n032RbsBOpk3r/0vCsReE3rDsfKGPEdpbUMPoeneGD7czjbxz4dbKZmwk/PcwTw54B9rS2zuLHP0w/NP0hKvRBukrerd5Rwz9nl4vtT17X2CeZsKrtm/nttDbS9/dhvaHh9pHzua7GHiOUfBHu7uwre4p7RT2tAn/xwThO307d+50DoTsbjDB0985Jjzcefj3YNvnmPD89cHBracHt24lwxPx7L/wZzpY8cmzD8Mu8VxfeihS/e9hHmxLVwsPp2fDrvZA78Bs37eFtu4EMqbSYVYfRKeYh9F6atVLPSTsYd6d3XKP71j3bNt5TAjC/1h6y1DPPfeg/6mQF/q/dH7g+03dSz0ZGho6dQrHJZinAzcB3a6+FwYG3GvBH4b67mZ2tKEmhL6ds3DV6BADp07hEAe6T8ci1RiCf3oLvGZg4FSPczsGhoSn2zNRkenzr9KzQw79ktyJe4YGetO/1J6V2rrtv22ncPdwayEt5C4Jz6W3Ran/9JfaUtZ70KX19UaEUwdeQO50O9m0NNL+ET760AvAz5NbvLX3I9N/KEiWGurbJghh46e3U1FlBP+w8VN3rlPM3e3svGhb34ajF/6314vs4ScbwH9bT5gIMIvg35b2LyKV0evXxc7N3Zneu1Ynqjn49yD4tx6tOYA2gCj7/xQo69a9FvTUdvbNRiUTkDvNHDsmtAX/dAT8YT0htd3i0zokAPwDz3xoW189/LcMxJ1MIYpxC0L2/SHLro66eIr5C0xb8O/b1uOy4PH50KGFY5HGzyAC5RdO0Zf20IvbMiTc3Rb80d+8W2dEkEOmZ4X23Ymm4Y9OhGz/NqKBDyBrhal7XF/o2YZg93wbF/vp9ECU8odsQl+6HfNnMEJBkkc8kAbVcqCVg+1H8D/lIQTwP4DURne0fwT89yHl8wWfuibrBNn+rZcdDYM+9ytf/C4HhGNMA/ine516EU9Zp58VvtQWRvcKkQzke9AF3C0Iw/HCX4h0fXe2FavPMcf6IrTrC0wbq3YPMqX6GlDserb0pr8KhmCLeZVBuV77k8cG9CRkUO1p4YD7mb3pIPqjtX/vWiCOj9sT9bt7tjDPMieD2j8a/m3Y/jKGf0/oUhrA/xLy73uHwtTHWebZdmz/WwyxIKKIlLN9whopBJHaf0uU8dPOMkNP4Gy6bi85NcDczRxo8VBbBWFnn5M6i+CVDjBtGIJbw1ZqIECVfqGlhAIxfgIXdk8Y/tsZId3bBM4jTRyytiLgT1320F3Ftn+98dNO5Ge4/j5h7S9ELqVBWOM99QGPdmx/dPN2UwT11Jl8WwaAQrN/w8Ifmf93R5hSA0gFtbpoZeFZYcs95F2fCt8GkHbIRIMrwX+ol9nZSgbgEBOw/VeBf0/LBn6Pb2sJvXnyC2T8PODb/yJd34G44L9lBfgLUfDf0jr8hyGzIAi90SoP26h9v9h6iK578D8kPMdEbFroQe1pdR0h7T/UQ+9Bb8+WMBTQg/10dBi6Xfhv6R1Iw5ayJ2b4N4P1nnqy7OpmEbqrq0Z+EPyFmODfA/Df3kn4M8xZQXhXcIoPI+7L0Dbkfj+4YeG/g4mG/56WrnkY7ujZ9GxYAfQEbvLO1rkEK8L/nl5kXDKfF5oNqTYJ/yZt/zrjbtW/GOou/Hu6AX8BObcDFPeRPs+WvifbStF3S/vXHQ3eBVoUB1q8DQRaXjRtC/L1glHoLX0vCC0ediX4g8Ltne1Nf6fZAk2A/+zq8O+bHZodgv+JuF8438/ORiF9oNf59VADGZhNP91d7b8Fbe2dhf8e2PMdU/cUycmEHtFAmymfLtn+e9N1d+0UBD7vb+0wxGQe6HURv62vLgzUm/4001pAdUXtj7XNQG+6DxlAh5vM+s4GNVQU/AVMWkkzHjmQfOUyBtPhd4bNvW3ur9PR7J++NEL2w92Efy/SSb/QSfjvEIQX+oaocqPPuNcLvjo+3zFB3qDw3yv8RF995AfSFa2kVLcKwlfTnv0HX/TtfK63L5wMQYYgU4zP9ieG2gDuUCE3C/867c8E4c88/PDDn/70j939Y458morz/d13/9JAb12Uo+8Xfyny9Z/25POH9oRJDx11fRvDn4lL+wvP9lG491Lq5bs7e7d4CQX4cCq9U2ib+xMN/54I+DNtwB8t33TfqXoj9fOtWeky2mUHehz7rwd3jfgl4bn6lAJEf3bHqv1xdIEBDuj21eG/txn4u+acELbvnJ8Ls9uCdi7SGH1768scIrj/uzsEfwbfp57uwv8BhuaaXbe3t+/Ys6GnDsnfTwvM1pjgvyOK8nYPgn8bFbqDYLIP1Dlz29CzbKXf1W5B6Ato+t4hcHiEnX1DPUEdOQtk5a1rhn/QpUYGECyrVS+5ge0fgP/ggw/eD7LbE/+38PUO4djObVvqwlq/JOw5+yV4CX6Z7w+cIxx65Eu7H9ixGvxPpddg/AT3JAT/FQKf/1M9/Pe0lvb6gGHeFQb85xyATEwfMieCb6uXaZv50xzf/56+nW3YV8MyKP+6fM4p4V2mFYwS0ycUkcfKLr0znFDoRebWnrXC/x7IIt/jOyxEQJ9bNQUM8B9YBf5NbKEIaju31SvtH2t5g98XK/z76rT/lhXhf8+a4Q+ebwA6PTuhTw4yBEJbyymglT/YSfgj7d8y5+cQwuiTfS/UJTN70TtohUGxN+RJocOk0QI6nRM+ne4dClfSp/e2sMVGwZ8cMhBo79kytJP56moR0Kbg31SUa+e2+pz2jzGtN4jccPBvhfPzkxAEOOVHPzCFwTRMD/X2BrgclPHSGfhjvv8Lwt5BrLuG9+1DShB/gI/79kWk6pjhn/8cMtyOCU+mXwgHsntnmbMtVZH8U4DoUJCAh67xAeZ5ZBqmZ4PoRzhp5U5Ewr+3b7a3PgLfCymYFZETF/yJxVuv/U+28Xg7Dv9WAp8twH8YWNNfwpkeL7G3Df3sAWQJMzu3BInlPb3ATxzuoPbvPUYLunKrzrJwv3oYLJ/eEIyGIGK3p6U7/6W+YNPRWeZhBt7sHujGG77WgfSe5tl5UfDfdmxnXzD03gM5BqRi0r5i2n2dhH+k8cM8FhP823B9092GP+z5xxDM/eecTf8YxF8E4cf8Sg/vC0NQoHd3h7Q/OsEXho61NtBl76dn033b6naRoYE+oSVi/vBeKB0K3Pih9JOEiTbICD9RR6jrbYX6HAH/3vSxY0zgqE6mDRlWT6/kWRwS4jJ++mIyfmLT/ulWjZ/0WuH/MLiNs4EHT8N6yKaGxEiPP0DXO8TMtlVA20Knh740HleRTpOPafgiTb7rc7/yUjLpF3oD9UE9JIgo7BGEFlJTOxymue9SkBvqRsbC3m/P0Avpn3iuWe5PHfzRnYQgz5M+3CAvwHEE+tKHhMYRMIj7xwD/YeFYNPzb0P7pSPi33mR4sHX4R9r+jzR7wuuC8C6k+X3n7IU+GjgMzjyXDlmnPdj8YZiWg/NNlbvgBdbXB1Nb6MiWoGwL/RgKr3uHesPUlZ5ehP6nW2pKMgxRn4HAUWaRnwPuA/nt0+7FunkQqIGT97UNfzBxhF9ktkVzoLfubahlYoI/Ex35OdCO9k/HYvwMQ/CtLyJA3BLjs7cV+O9FpkxvkOPWd1Zg7oPfnQZMDNUVZPUJbVRkNZf2cknlmGl5D/5v5ZkuUSzGoZ24hKqVxwikj14f1acH2faM9z7RRvhkfT3BtvSxJu9EPd8fGU/HhAPfBGrCbJhUDM+wDwJR32zg+u7pWORnCMG/9cAnw+ysp4g9TRJksuDl3wISMbkTfty3s46KN9Ai/J9uGv4Pw3ILsBuGdjIutRP8r76hMCuQaYf71hzpIZZavN6dzFnkQfzTFq5uP04cBBJ/QFohTX3g8T6IdsSdgRoT+AqSXzuahf8XQvBHy+vnn4SMBQMbmBsAdQJXO9MHEP5/voPwZ+KEfx0K+54ThNUayTH1vtyxiDLTgU5pf3SAd9MuuYd86vu8r6sPnkAUKrzHwBjemPCHAV9I9TOC/Autxdt249iOT/tDmfw/9Ye272ZCWhqyYk8LTbWlGIyGP1oXeyC+vDOKe9mHFhdu0r7vdoR/zxd27oTJg60IHui5LRr+21uC//3Nmj57+/z3vgfMThJ1HqYO4XcwDaAnaJlCUGV4A8J/Wx+TfvJuhJrWdqcHkWvbF7wNUNPotz32Q/A/WGLYA40faOXXcFvwhwwHwv8/YyLbdPUyfbQIbHjjw7/+6r/gTN8kTlsTYzrxy6IeqzDeEfjfLwiU9Orq/yHmX/lpBzkc/A8TQ9JPAjd43waDf8+WnUN/gWyhj7W0Nl8ThBd8LBpc3Mb84jfdsM4+4h3shdxaMCwxAH16drSr/YmgrfS5dCgD5jjf0Cn2wEa3/ZlI+GMfLqpewOmZVSd/554h9F8k/HOdgP+wcOyf+X12XMgW5AgPM8g1xqWvwafeKuG9C/CHGzf7v/wSYSzKh1rCwafDgeudCE5/IWwg/QQzu8UrfiTpBebZZgzBSPg7oc37weFLv1CfBBkY6IMKhHAE9DaB/wplxg2jFg1GVgl7OwH/PaDahwLZIgjH7Qn5xu8y4erHIWhHIsQA/7XMdYy6g719UKdxFpbAnh3NdiOB27AtWNUORcLh9/cguMdDAfj39A71Mc3UgEbD30kab0eX+6X6zFEvbqv1nbo+0LdH5Id4jM5m2ROB7R63rr7HjfZFrRtMeG4F/s0RnnGNS/BqBhDcQ6asLDwX0TKj79uMcHjfWuE/0NN0CWqT+N9yz+zAtr70tx9ufrbvDkZ4ss9f3tizZbbvO5ENgvbgaoAef5piCCg6j7QD/z5v24AUwN11fRrx619IA/tw90aGf1SjE69ktmeLG6P2f/QenxfBdtvLdAX+0Eu5N0Bx3AKJ/NCfbheYr6Zn/TYvjktDXnl7vMYPMft6hqDaOhDv3+IL8gdj/lELAEESKc3055tvnvnpNEW1s8n1pqPq2nbA0IG/Q5+hLw727Oo1oFvr0vOg/X1N1JGNszcNTWnrwx596T3BHfn+2Dg/27aFS4R6EPxbL+gOMj57onVVI63V46+rju6E0VKfnyYDn3fjlh6BDQf9ZT1L7EFGCBaFku5kLXZja8r2x9ewE/fS7q3rXN1Atgyc6kF2wv/kv8u9Q0Pb0t9uanrE8B7SEefvBCK7n48kTCDzB9IgPQGa8gAkv/auFf5Qq//cTqbXn1X2SiuBAz3s0/4bG/6rbOM9jSbSOkmXuj/p7UDcfyuQ5INcn1mojT0dERTfGzwLdsvS6ZbaHawO/x6cf9i2LU3mufRFTnMJl2BjBlDvUE/9/R7AJsWTq10XesEL6aHgXUd7YGRVwyD2kcnTG/JVfp1dNQ24OvzxAJivUlesJ1BmNNQrvOBfyrjaq+d2gX8LvpxjF/V0gfQgCM8ys7MhjtexqGlA+4lxHFylA7NQS3VobfCv9/a2zVLGZ7PEz713v7uzL1iNQo0YhP/nmmlNsUeY9QxVsgfeLTRi2wg7+7aEOCJbdq5eAzq4OvyZQWTjPJ2Obk6FB2Ecihn+kPA/FbprscK/p6eZ0EZP6AoiWg/FD39M9Bzo9dv0s+mHo+vMod/9toFQ6/NTW2D+0GC88B/atq1ueAv5JipB7uTNn/vFtD9XeMrJXPWB17iKBYj+fpsXzccfkd/bqDsrlMC9EGoygoeINeH6RsB/uM64ggrTcKdJXGYEFIg9cbu+fSEaXrvwZ6Lg39OqbBka2hI1paSNrO9q8N/KCD/RF0xiDvQhQEaS9JCL8en0UEi59m6BxpR74zN+iCG9U7h7x+nTp7c2Fud32z/4YPv2HYd2Q3fGvX0BdEHVCEL0QLrv2MpmyVYgfQz5FU7PENT6PNggxDHoBP+DAUph9hizuw3jZ7h+dxFeSG+Z7Q0rwCG0lH/im7gQrqPw3xIb/PE2Gilf+MIXVvp+qBvwZxi3LZQb7mD2NiozR+bPTl/lSw/x0HDK81Cs8N/St1PY23IxGVRmfoepKxuBJN7ZlZNSgtsa1I3CbUF7oHyp0R88ABTNe4IbNlIFUAE0vHb4A8cWMgDgi4TSn6d6gWmIfZk44X+qU/CHDSvd2jHwiL6+vi7A/34GPcVg/r63b0eDSMk+4D4c69sZNq6HetPPNs19a77Pz97hlocSDyO38YW+QGEO+vp/7Nmyc+UO5w+AsXHKb2r0YD73yZU8Bbxg/B3o0RNAf7NiYWWz8GcGi4LwS+n0UEQIsBf78ofihD+4vj0xuL4Rszu2bDvWaidUYtFG0P8GGnB+fr5N+OMyvaFAlAmztw40SutdYoR/1le3ueGu53vWAP/I4UZt9fffwxxLbxsI5gFwQ4a+FQacbxeEr/qugaa9vyrsPbRj//7P7XDln3wOf7N9x2vbtz6SE86mA74v/jOhb8Xhx1uZer5/Ovqd7obGKszAQIRnCBlm4fC++9HOHa49iIvytqUd0gOQB8Je7hDzNEMmdDLhqdMe1H1uHoOHFcNY3+hyl4ba/57W014ylPd6+ct74LH3fZqRD22Hp7wdP2siO/C/wa3I+/1OX72f3vzQo87CHy/ovrowMxhoext3+RSEf8UEO1kMben7Z8FR6b7ohvso+7bVRSdm0w8zQnpF7d8k/KH2AJmafVFR822QrHnwAIJ/SOmtM/wjxlvMIhDuHwYZdGXY+T7080H3h1vliC5vDae7tAn/B8IVleirvv/FqcxxAyre2sY/E3q3hSpfYMzTs01GfzoMf0ib4lsRqigcYr7U0CohTd0ClD/kej3nRFT3Pvfc+Pj4c8+5hRhud4m/sm0gaP5AyCq9UnV6K/BnoFLtYSbdE8mB/gkB6dS6Buc9cZEetrRJeauP4THtDDdiWod/y6SH7XB3A64V8rW2HTu22jD1v/CFYHYIoWUA2t42NZeqBfjvawf+P0/K1upCxmD9NAxGfomZDcWfB3p3Ork1n0fmZNjIh/QL2+qjHEPMC881jgMMtgJ/ZvhuoED0RUXIe6H7RH2nh55wh+e24Z8+EE+jE4B/6xO2hmWhb2eH4b8XR9wDo6FgiHUfHkUfOdAeQyi9LUz8xNTIZhhfXYA/epizUYCBhHl04Rd0Numdrc+/DA0MEMvbR8/C/Ue3OLMfIma+gJl1t5C7Hgf89xEO9M5gJUaPY1Skn0Pe99BGgr8QUe01hPbj/a3DH7sRHYU/Mn2+nR4YCtg+vbDvb+ltnJaDS/pCT/3gi96B9NNNmSsN4N8Tl/GDbty79WXJW04BW/CfNjR9BiLarDmwr5d77unBXLx7wmkp3FEU+qLk1m787HN2aIiAhrtgoX16to957rm+LR00fh5oXfNEwb/dFrdR8H8uNvgPQ5uqgaGAy9eDF0DDpgr39FDmdjAjTZqSbWOaiv50Gv4M404oCIRne4WnoYtj1K37aqjJmjvbZktP/QrwijS8l/jBPITsrCcbxgFasv2xXJKBlRJV+ndq27YtvUMbCf5MBN8fKibOtmP793UW/jjqMxTU4z3hLbYnFEH0GwFBlhqJfh5ad/hvj+paAzYJWuw/GRm/P4YrzKMp01vCqO/Z4qNf13ukOMeJWwAMrjXw6adAHGP66okz8H1v57R/613e9kXZ/rNoHX0uNu0fm/FzH5nj0tMTVnqn6BArH9M+uDiinnsPbgLezNCj5m3/vW3Bf0/katqCI58R8P+cF77saURWacxhaUDlBbqEzES1fthaH89eFf7M4wIkJ7fRgQsr08baZXzWvck2urwNR8O/HeOHiZ6D0AD+W1vm+4Ppk46a3BjBUaqvVIiWnekmZvJ0OPB5lkG2zEAEf7yXiaT9gOnTG1lZF6ixafSbsGfscKxfaLARbhXagD9zSYBxm4RhPbSJ4d/bovZvDP8HaeeGnhUqc1btpRYipc42M/OxWfi/0Jb2R/A6FnHfegjK6hF5N7qh27DV4rsVTa/3BpUcPZgqHYnp9uDP7EOP69NC3yrYjxv+LRc7CvHBX25F+7cM/7MCpe73RCG+vlQ5yvWLaMgB1VGDK/d7ana03QvtaP8nBUGo40qRNQrDHbdHvP7JvtmecLynuc0wcIp7Aj/G02C+GR/8GeYksFn7ttxzO8Kf2XDwF4QfC0fTerashGz/L70XhV6Ln/reNrR//Zlgukur8N8Ok9j76nK+5NLS70agTDj2S+ktQ1v887tJYPMe6EKzOjP9Hug9empgy1CYBAKM1agS+7bhz+xA2PqO0DvUEfj3bS74H2CO1ScTe/ATb+ax30OE+GH+JTAEJfIH1m789MB0F+aBBw48EJSfBDngCvnZw3jm2gMHgFf1dHpndLH1ALO3nvRwCyylkDPf04ie3lAGBjA5Paj+oVWGPBj5oNqDPwb1w8K2DQz/fZ2H/3Mtjrd4pMGdnA1M6SFeXG+rUq9mB4QvrVJX3mR/fzB+vMGbJKUSnrTp/Jb+TBD2fDvd1xtplPdA2e599ar4O8xQT0hzfyHd6qPCVca+g9zTuGpiDfDHQa3nhG1DHYH/qRhcXyZG+AsdhD/DPC30hqYA9TYmxTR+7ANbeoO9joeQx7py9KfJuH/vzmc//fDnd6P/d+/+/G7ykcjnPSHfP4xk91cPnf02uqDe2WhfdAgmcA3W3eKnmYFw2Ke3T2j5SQm/FBgw2kusrT6hvmA6crpL014OGHcNioDjtv3bGm8hbzD4Rzc4P8Dg8Z9+q+XUlm2/uEIdOYP/o59djvaxnduGeuuoZYKwYrezZqe79G5r9Y717ewdaIAKqN+sS0lD8GvbUKhV+Wz63dbRD6pgqL7/9e760dRb62fHtAB/TIE46zhtPZ2E/5Z0m4HP+nUU11zfxrO9tjYYax05cxPdnXcDwyp6/seeLS/AHFlSSy7QfYyyODwbo+6xPw350tDIU0z93792+CP92aKsEJbsTX+6Tvn/tABVzqHQ7yzMcDwwODi8Qo3xdp/A9+lhGZr+3xPOB+KxLcP1ru/OtrU/6QP9NDJdYQxwZFX5esO/jvSwBvifqs/6tjbaLhL+e9GPw3PaB5h3EWh3/MIv/ML2HX4hpS605sX5Ef0MTc/TETqI+cmVBrI3C/+e9tp++rN0HkET2MEHwn4aaWwasPvvgVZtre/UO6BQfnaLbwGQThF9dWfd6jyonuZJD3UG0LGdeAOoD9T29LTF+IyG/6dbHmwa2d8/Tvj3xgD/3eDpzIbKNHam2xhUtAePggwbLTj60zho2eRsrzalpyfqG2DjhSF2gDSqDU7sG0jvFIQ2qjygQ9y2oXDly5a+r4a7nq8d/rgLxLto4fbWpR0hghFX5Kc9+Atxw79nTdo/osPzMDREGAjRHYYak7RWkJ8Plsi67i/z7RW4b80bP2sVh5s3gEtjd9Sp4Z9IhzuVDIEW2Mu0nm4bhslos+Hld099i9B646dl+GMHYDcM4YxiY8QCf9zj+NNC68ZPFArXBv+epuDPNJrqHmH8HBNmB0INZICt0Aa9FTdIqMf/C8B9G14v+Ic71gzg1siHQpv0NxHMAaDB0WnQD/d0G0wjeMMvMEN1gISN8Factj/BhgzFeDgF3LOltyeQlYwR/i0zPgH+X+gI/Hvahf8jdaYPQ3Pn9/iStdAFsI2Hjud89s7W8aV3ouPtWXftj4tChnYyfcfqU3F3uxGYe4KcPeYw05bsFZ7DE3/DM+9CaRAE/+E1w5+0gUu7+eq1Gz8+wnPPGuAvdAD+gf7dzXV66GkI/62gqJDSu8cfpRsAQsCOdh76Iags7A2bGz1boPL3ULPwFzoFf0i+CulfFJi6ne1J8FVPYdPZt1v3wii8fe2VWCJcPyzM1lFod0JAbThm7c+QLhDf6dtWV9XWNt//lN+TbhP+ECesz0qvBf5hQDdn+/c0JD3gqM9QyEZoy+91vV//mHP3FgL3bXi9tX8vemNPPsfU9127vld4tv6cszDD8QGmTbkF22qgegiPCQGv++5Q1jdMTWmH3IfwIXweOcChYCt0Zmx9qrvwZF0ueQipyZa1vyykd54KV5m2C/+6ldRzqleIVtNwVwOd6R2eS8j237OXhjvc9GQPWZ/tFhYOwkOICEDDqXPrB/+BoVk83+jJvQwT0d3tFjplX93tQkg99k2mfYH270Phxiez6R3+NEjaC433uNqfaevuPwg6Kz0bGoQBlTYtwj8NFT/hJzCQbgv+ws4ge2JgYKBdvj9T1+YN7eXR8Ic9tX5A0FAY/mcF4Wz6XfeokPDv3TLU921BONTeE98H5s+T6aEBKJAPvOv01gbU/0jjZ3YIt1WYnZ0dCEr4+0jZMuD7O/SucLeKdBr8WAT++vEUMMAR3YYB8njIeWYHXoAWoYPtox/B/OH0wNDA0NApOOIphINTQ7PvvgDm/7APaswL6M2i68XvGH18Ybg9+EO9HnIAentnqcA5IXbVsvZnhCdfeBepDCSz+F7AF33twf+Fd4fgqfn+S9/NnG3rhr6A3tIQel9Dp4aG8NtbEf6zf8d9lPhmoH/MnlCfRuHu9Av0vuN7jw47BNG5Pe0/9T3QJgQfyRW0TGfPDn8umvsWof33MmkmRoFJF9/5/LPHoB/Vg1vdfKQnMjwP32gMD5oH1nLePQLGY11foOFD8h7vZ/UZwfQeub29dz/uAx26d+lvtpH28l2te6FnmVbvxjAjCxEd7trj/HwzHTnFIfJYW5lomtndAfjvhvcZfuZp5hfXpPQGgYWSDt26NFz7T8rCzzcBf9CazyJ5+u670ce71yjP7tm79xjlKcn3D0fDVEZI3fv0s/R0zz6NZY/QVvTLv6zQ+tnrvQPn3Rw44G2ESE8dCF/ygbaCbvhoOWRx7X0Wy9NPOydr3fXdi+7B3b5bDxf+8B6mdWUgHPi1uid4YE8b8Ee2/+66R3v3sw9H82kQBh/Yuzd45mef3nt3wADZih77nj1373Xf6LP4ff6Y0FYrX/+iuhthid5+clx40z+5e08U960e/l7v02APVP/0ivpOmw7JOTjjwvmdfODQ1q2NjBQM1GBjVbxccvvXBv/9skCbuTLBpq3ecL2tvndHTVz0QW5X/Qw/KDOy9wboUbe2eBA5fL/pgQ60mAAcZJioZ8i00eXtD2XBY7h719TgWDAPStgrML57QD7LHrIHnSM+F8JW62VVwbu3h4mYuIIAu5eJMv/r4L/10H5CLnr8733uc9BCeT+Ss0h27Dj72v7XyPf7P7c/KPBS+Hj2c+5vduz43H440ODwiu9nx6GzwFrbWkdu2rG1/ZtAoqWD6Bhbd4TlyR3bd2ynl7RvBzo9/fnndpw9S9lT+9q++dd30Lvx+OPofu3/3I5/cuhQq49z/479O15Df7z/n/wTuJzHXzt7dj+6skPbW70a9Kxegyf32v79r712dsdZ3BAbHaoN23b/ofvPYhCg/+A4jz/+OPpu//6/F6kp/t7fQyc6S2/n2deQ0BvrPdJ9h9BF7d/hEtgoiw3BYHhtSm8Y3b2zQSw9iR769ifR0dN1db93MZtG9jGJJE9608I/kUQS+CeSSAL/RBJJ4J9IAv9EEkngn0giCfwTSSSBfyKJJPBPJJEE/okkksA/kUQS+CeSSAL/RBJJ4J9IIgn8E0nkdpP/C2wj8GLKfv/DAAAAAElFTkSuQmCC" alt="BCS">
+
+    </div>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- 1. CLASSIFICATION -->
+  <div class="card">
+    <div class="step-badge"><div class="step-num">1</div><div class="step-label">Classification</div></div>
+    <div class="section-title">Project &amp; Unit Details</div>
+    <div class="section-sub">These selections drive every rate and cap used below — sector, taluka category, and unit size.</div>
+
+    <div class="grid grid-5" style="margin-bottom:22px;">
+      <div class="field-group" style="grid-column: span 2;">
+        <label class="field-label">Client / Firm Name</label>
+        <input type="text" id="client-name" class="styled-input" placeholder="Firm Name">
+      </div>
+      <div class="field-group" style="grid-column: span 2;">
+        <label class="field-label">District</label>
+        <select id="district" class="styled-select">
+          <option value="">Select District</option>
+        </select>
+      </div>
+      <div class="field-group">
+        <label class="field-label">Taluka / Area</label>
+        <select id="area" class="styled-select">
+          <option value="">Select Taluka</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="grid grid-5" style="margin-bottom:22px;">
+      <div class="field-group" style="grid-column: span 2;">
+        <label class="field-label">Product Sector</label>
+        <input type="text" id="product-details" class="styled-input" placeholder="Click to pick a Product Sector (Thrust / Selected Thrust / Other)" autocomplete="off">
+      </div>
+      <div class="field-group" style="grid-column: span 3;">
+        <label class="field-label">Product Name</label>
+        <input type="text" id="product-name" class="styled-input" placeholder="Enter product name manually" autocomplete="off">
+      </div>
+    </div>
+
+    <div class="grid grid-5">
+      <div class="field-group">
+        <label class="field-label">Sector <span id="sector-lock-badge" style="display:none;font-weight:600;color:var(--teal);">🔒 Locked</span></label>
+        <select id="sector" class="styled-select">
+          <option value="Thrust">Thrust</option>
+          <option value="Sel. Thrust">Sel. Thrust</option>
+          <option value="Gen" selected>General</option>
+        </select>
+        <div id="sector-lock-hint" style="display:none;font-size:11.5px;color:#5b6b66;margin-top:4px;">Locked after confirmation. Change Product Sector to update.</div>
+      </div>
+      <div class="field-group">
+        <label class="field-label">Taluka Category (VGIP 2026)</label>
+        <input type="text" id="taluka" class="styled-input calc" value="" placeholder="Auto from Taluka" readonly>
+      </div>
+      <div class="field-group">
+        <label class="field-label">Unit Size</label>
+        <select id="unitsize" class="styled-select">
+          <option value="MSME">MSME</option>
+          <option value="Large" selected>Large</option>
+          <option value="Mega">Mega</option>
+          <option value="Ultra Mega">Ultra Mega</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. FIXED ASSETS -->
+  <div class="card">
+    <div class="step-badge"><div class="step-num">2</div><div class="step-label">Fixed Assets</div></div>
+    <div class="section-title">Fixed Assets — GFCI &amp; Eligible Investment</div>
+    <div class="section-sub">Enter investment values in the selected unit. Eligible Investment is calculated using the supplied VGIP 2026 Excel model. Land and out-of-premises captive power plant are not eligible.</div>
+
+    <div class="grid grid-4" style="margin-bottom:22px;">
+      <div class="field-group">
+        <label class="field-label">Investment Unit</label>
+        <select id="investment-unit" class="styled-select">
+          <option value="lacs">₹ Lacs</option>
+          <option value="crores" selected>₹ Crores</option>
+        </select>
+      </div>
+      <div class="field-group" style="grid-column: span 2; display:none;">
+        <label class="field-label">Component</label>
+        <label style="display:flex;align-items:center;gap:10px;padding:11px 14px;background:#f7fbf9;border:1px solid var(--border);border-radius:7px;font-size:14px;font-weight:600;">
+          <input type="checkbox" id="auto-efci" checked> Automatically shift GFCI → EFCI
+        </label>
+      </div>
+    </div>
+
+    <table class="data-table" id="assets-table">
+      <thead>
+        <tr>
+          <th style="width:30%;">Particular</th>
+          <th style="width:35%;" id="gfci-header">GFCI (Indicative) — ₹ Cr</th>
+          <th style="width:35%;" id="efci-header">EFCI — ₹ Cr</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr data-row="Land"><td class="row-label">Land</td>
+          <td><input type="number" class="styled-input gfci-val" value="0" step="0.01"></td>
+          <td><input type="number" class="styled-input ei-val" value="0" step="0.01" readonly title="Land is not eligible for EFCI"></td></tr>
+        <tr data-row="Building"><td class="row-label">Building</td>
+          <td><input type="number" class="styled-input gfci-val" value="0" step="0.01"></td>
+          <td><input type="number" class="styled-input ei-val" value="0" step="0.01"></td></tr>
+        <tr data-row="P&amp;M"><td class="row-label">Plant &amp; Machineries</td>
+          <td><input type="number" class="styled-input gfci-val" value="0" step="0.01"></td>
+          <td><input type="number" class="styled-input ei-val" value="0" step="0.01"></td></tr>
+        <tr data-row="Utility"><td class="row-label">Utility</td>
+          <td><input type="number" class="styled-input gfci-val" value="0" step="0.01"></td>
+          <td><input type="number" class="styled-input ei-val" value="0" step="0.01"></td></tr>
+        <tr data-row="CPP-In"><td class="row-label">Captive Power Plant <span class="asset-option">Within Premises</span></td>
+          <td><input type="number" class="styled-input gfci-val" value="0" step="0.01"></td>
+          <td><input type="number" class="styled-input ei-val" value="0" step="0.01" title="Eligible for EFCI"></td></tr>
+        <tr data-row="CPP-Out"><td class="row-label">Captive Power Plant <span class="asset-option">Out of Premises</span></td>
+          <td><input type="number" class="styled-input gfci-val" value="0" step="0.01"></td>
+          <td><input type="number" class="styled-input ei-val" value="0" step="0.01" readonly title="Out of premises is not eligible for EFCI"></td></tr>
+        <tr data-row="Other-1" class="other-row"><td class="row-label"><input type="text" class="styled-input other-name" value="Other" placeholder="Other item"></td>
+          <td><input type="number" class="styled-input gfci-val" value="0" step="0.01"></td>
+          <td><input type="number" class="styled-input ei-val" value="0" step="0.01"></td></tr>
+        <tr id="other-add-row">
+          <td colspan="3" style="padding-top:14px;text-align:left;">
+            <button type="button" class="secondary-btn" id="add-other-btn">+ Add Other</button>
+          </td>
+        </tr>
+        <tr class="total-row"><td class="row-label">Total</td>
+          <td id="gfci-total">0.00</td><td id="ei-total">0.00</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 3. TERM LOAN -->
+  <div class="card">
+    <div class="step-badge"><div class="step-num">3</div><div class="step-label">Term Loan</div></div>
+    <div class="section-title">Term Loan</div>
+    <div class="section-sub">Term loan is auto-filled as 75% of EFCI. You can edit the amount directly; clear the field to go back to the auto value.</div>
+
+    <div class="grid grid-3">
+      <div class="field-group">
+        <label class="field-label">Term Loan Amount (₹ Cr)</label>
+        <input type="number" id="loan-amount" class="styled-input" min="0" step="0.01">
+        <div id="loan-hint" style="font-size:12px;color:var(--muted);"></div>
+      </div>
+      <div class="field-group">
+        <label class="field-label">Rate of Interest (ROI %)</label>
+        <input type="number" id="roi" class="styled-input" value="8" min="0" max="100" step="0.01">
+      </div>
+      <div class="field-group" style="display:none;">
+        <label class="field-label">Bank's Non-subsidised Spread (%)</label>
+        <input type="number" id="loan-spread" class="styled-input" value="2" min="0" max="100" step="0.01">
+      </div>
+      <div class="field-group" style="display:none;">
+        <label class="field-label">Interest Subsidy Cap (%)</label>
+        <input type="number" id="int-sub-cap" class="styled-input" value="7" min="0" max="100" step="0.01">
+      </div>
+      <div class="field-group">
+        <label class="field-label">Loan Tenure (Years)</label>
+        <input type="number" id="loan-tenure" class="styled-input" value="8" min="1" max="50" step="1">
+      </div>
+      <div class="field-group">
+        <label class="field-label">Moratorium (Months)</label>
+        <input type="number" id="loan-moratorium" class="styled-input" value="12" min="0" max="120" step="1">
+      </div>
+      <div class="field-group">
+        <label class="field-label">Repayment Basis</label>
+        <select id="loan-basis" class="styled-input">
+          <option value="principal" selected>Principal (flat monthly principal)</option>
+          <option value="emi">EMI (fixed monthly instalment)</option>
+        </select>
+      </div>
+      <div class="field-group" style="display:none;">
+        <label class="field-label" id="out-monthly-label">Monthly Principal (₹ Cr)</label>
+        <input type="text" id="out-monthly-value" class="styled-input calc" readonly>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. POWER CONNECTION -->
+  <div class="card">
+    <div class="step-badge"><div class="step-num">4</div><div class="step-label">Power Connection</div></div>
+    <div class="section-title">Power Connection</div>
+    <div class="section-sub">Enter the power-connection assumptions used for the power benefit calculation.</div>
+
+    <div class="grid grid-3">
+      <div class="field-group">
+        <label class="field-label">Power Connection (KVA)</label>
+        <input type="number" id="power-kva" class="styled-input" value="2000" min="0" step="1">
+      </div>
+      <div class="field-group">
+        <label class="field-label">Capacity Utilisation (%)</label>
+        <input type="number" id="cap-util" class="styled-input" value="75" min="0" max="100" step="1">
+      </div>
+      <div class="field-group">
+        <label class="field-label">Monthly Units (KVA × 24 × 30 × Utilisation)</label>
+        <input type="text" id="pw-units" class="styled-input calc" readonly>
+      </div>
+      <div class="field-group">
+        <label class="field-label">Power Eligibility Rate</label>
+        <input type="text" id="pw-rate" class="styled-input calc" readonly>
+      </div>
+      <div class="field-group">
+        <label class="field-label">Annual Power Benefit — before yearly cap (₹ Cr)</label>
+        <input type="text" id="pw-annual" class="styled-input calc" readonly>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. ELIGIBILITY & RATE SUMMARY -->
+  <div class="card">
+    <div class="step-badge"><div class="step-num">5</div><div class="step-label">Auto-Computed</div></div>
+    <div class="section-title">Eligibility &amp; Rate Summary</div>
+    <div class="section-sub">Derived automatically from your classification above (VGIP 2026 rate matrix).</div>
+
+    <div class="grid grid-4" style="margin-bottom:22px;">
+      <div class="field-group"><label class="field-label">GFCI (Indicative)</label>
+        <input type="text" id="out-gfci" class="styled-input calc" readonly></div>
+      <div class="field-group"><label class="field-label">Eligible Investment</label>
+        <input type="text" id="out-ei" class="styled-input calc" readonly></div>
+      <div class="field-group"><label class="field-label">Capital Subsidy Rate</label>
+        <input type="text" id="out-capital-rate" class="styled-input calc" readonly></div>
+      <div class="field-group"><label class="field-label">Interest Subsidy Cap Rate</label>
+        <input type="text" id="out-interest-rate" class="styled-input calc" readonly></div>
+    </div>
+    <div class="grid grid-4">
+      <div class="field-group"><label class="field-label">Subsidy Tenor (Years)</label>
+        <input type="text" id="out-tenor" class="styled-input calc" readonly></div>
+      <div class="field-group"><label class="field-label">Overall Cap on Incentive</label>
+        <input type="text" id="out-overall-cap" class="styled-input calc" readonly></div>
+      <div class="field-group"><label class="field-label">Yearly Cap on Incentive</label>
+        <input type="text" id="out-yearly-cap" class="styled-input calc" readonly></div>
+      <div class="field-group"><label class="field-label">Max Benefit (₹ Cr)</label>
+        <input type="text" id="out-max-benefit" class="styled-input calc" readonly></div>
+    </div>
+    <div class="grid grid-4">
+      <div class="field-group"><label class="field-label">Power Eligibility</label>
+        <input type="text" id="out-power-rate" class="styled-input calc" readonly></div>
+    </div>
+  </div>
+
+  <!-- 5. OUTPUT -->
+  <div class="card">
+    <div class="step-badge"><div class="step-num">6</div><div class="step-label">Output</div></div>
+    <div class="section-title">Year-wise Incentive Schedule</div>
+    <div class="section-sub">Capital subsidy, interest subsidy and power benefit, capped each year by the yearly ceiling.</div>
+
+    <table class="data-table" id="schedule-table">
+      <thead>
+        <tr>
+          <th style="width:10%;">Year</th>
+          <th style="width:20%;">Capital Subsidy</th>
+          <th style="width:20%;">Interest Subsidy</th>
+          <th style="width:15%;">Power Benefit</th>
+          <th style="width:15%;">Total</th>
+          <th style="width:15%;">Cumulative</th>
+        </tr>
+      </thead>
+      <tbody id="schedule-body"></tbody>
+      <tfoot>
+        <tr class="total-row">
+          <td class="row-label">Total</td>
+          <td id="tot-capital">0.00</td><td id="tot-interest">0.00</td>
+          <td id="tot-power">0.00</td><td id="tot-total">0.00</td><td></td>
+        </tr>
+      </tfoot>
+    </table>
+
+    <div class="btn-row">
+      <button class="btn-generate" onclick="openAudit()">Check Full Calculation →</button>
+      <button class="btn-secondary" onclick="openTotalBreakdown()" style="display:none;">Total Breakdown</button>
+      <button class="btn-secondary" onclick="openTLCalculation()">View TL Backend Calculation</button>
+      <button class="btn-secondary" onclick="printTL()">TL Backend PDF Download</button>
+      <button class="btn-secondary" onclick="printOutput()">Download PDF</button>
+      <button class="btn-secondary" onclick="resetForm()">Reset</button>
+    </div>
+  </div>
+
+</div>
+
+
+<style id="ps-page-style">@page{size:A4 portrait;margin:10mm}</style>
+<div id="print-sheet"></div>
+
+<div class="modal-overlay" id="pc-modal">
+  <div class="modal-box" style="max-width:520px;">
+    <h2>Product Confirmation</h2>
+    <div class="modal-sub">Please confirm the product sector and the sector that will be applied to the incentive calculation.</div>
+    <div class="audit-row"><span>Sector</span><span id="pc-sector">General Sector</span></div>
+    <div class="field-group" style="margin-top:16px;">
+      <label class="field-label">Product Sector</label>
+      <input type="text" id="pc-product" class="styled-input" autocomplete="off" placeholder="Enter product sector">
+      <div id="pc-error" style="font-size:12.5px;color:#b3261e;min-height:16px;"></div>
+    </div>
+    <div class="badge-note" id="pc-note"></div>
+    <div style="margin-top:22px;display:flex;gap:12px;flex-wrap:wrap;">
+      <button type="button" class="btn-generate" id="pc-confirm">Confirm</button>
+      <button type="button" class="btn-secondary" id="pc-cancel">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="audit-modal" onclick="if(event.target===this)closeAudit()">
+  <div class="modal-box">
+    <button class="modal-close" type="button" onclick="closeAudit()" aria-label="Close">✕</button>
+    <h2 id="audit-title">Full Calculation Audit</h2>
+    <div class="modal-sub" id="audit-sub">Complete breakdown of every input, rate and formula used to derive the incentive.</div>
+    <div id="audit-content"></div>
+  </div>
+</div>
+
+<div class="tl-modal-overlay" id="tl-calculation-modal" onclick="if(event.target===this)closeTLCalculation()">
+  <div class="tl-modal-box">
+    <button class="tl-close" type="button" onclick="closeTLCalculation()">×</button>
+    <h2>Term Loan — Complete Backend Calculation</h2>
+    <div class="tl-modal-sub">Excel-style monthly amortisation view. All amounts are in ₹ Cr unless stated otherwise.</div>
+    <div class="tl-summary-grid" id="tl-summary-grid"></div>
+    <div class="tl-formula" id="tl-formula"></div>
+    <div class="tl-table-wrap">
+      <table class="tl-table">
+        <thead>
+          <tr>
+            <th>Month</th>
+            <th>Disbursement</th>
+            <th>Instalment (EMI / Principal + Interest)</th>
+            <th>Interest</th>
+            <th>Principal Run Off</th>
+            <th>Additional Payment</th>
+            <th>Principal O/S</th>
+            <th>Subsidy Rate</th>
+            <th>Govt. Interest Subsidy</th>
+            <th>Bank Spread Interest</th>
+            <th>Client Interest</th>
+          </tr>
+        </thead>
+        <tbody id="tl-detail-body"></tbody>
+        <tfoot id="tl-detail-foot"></tfoot>
+      </table>
+    </div>
+    <div class="tl-annual-wrap">
+      <div class="tl-annual-title">Year-wise Interest Backend Summary</div>
+      <table class="tl-annual-table">
+        <thead>
+          <tr>
+            <th>Year</th>
+            <th>Opening Principal</th>
+            <th>Total Interest</th>
+            <th>Govt. Interest Subsidy</th>
+            <th>Bank Spread Interest</th>
+            <th>Principal Repaid</th>
+            <th>Closing Principal</th>
+          </tr>
+        </thead>
+        <tbody id="tl-annual-body"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="site-footer">
+  <div class="footer-inner">
+    <div>
+      <div class="footer-name">Banthia Consultancy Services</div>
+      <div class="footer-tag">VGIP 2026 · Incentive &amp; Subsidy Calculator</div>
+    </div>
+    <div class="footer-col">
+      <div class="footer-col-title">Contact</div>
+      <a href="mailto:nikunj.mehta@banthiaconsultancy.com">nikunj.mehta@banthiaconsultancy.com</a><br>
+      +91 9327010300<br>
+      <a href="https://www.banthiaconsultancy.com" target="_blank" rel="noopener">www.banthiaconsultancy.com</a>
+    </div>
+    <div class="footer-col">
+      <div class="footer-col-title">Registered Office</div>
+      405, 4th Floor, "B" Wing, ICC,<br>
+      Ring Road, Surat - 395002<br>
+      Gujarat, India
+    </div>
+  </div>
+</div>
+<div class="footer-confidential">🔒 Indicative calculator — For internal BCS evaluation use only.</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script>
+  function num(id){ return parseFloat(document.getElementById(id).value) || 0; }
+  function val(id){ return document.getElementById(id).value; }
+  function fmt(n){ return (Math.round(n*100)/100).toLocaleString('en-IN', {minimumFractionDigits:2, maximumFractionDigits:2}); }
+  function pct(n){ return (Math.round(n*10000)/100) + '%'; }
+
+  // ===== VGIP 2026 calculation logic — based on the supplied Excel workbook =====
+  function capitalRate(sector, talukaClass, unitSize){
+    // Excel VGIP 26!C17: Sel. Thrust is checked first, then MSME
+    if (sector === 'Sel. Thrust') return talukaClass === 'A' ? 0.35 : 0.30;
+    if (unitSize === 'MSME') return talukaClass === 'A' ? 0.35 : 0.25;
+    if (sector === 'Thrust') {
+      if (unitSize === 'Large') return talukaClass === 'A' ? 0.25 : 0.15;
+      if (unitSize === 'Mega') return talukaClass === 'A' ? 0.25 : 0.20;
+      return talukaClass === 'A' ? 0.30 : 0.25;
+    }
+    if (sector === 'Sel. Thrust') return talukaClass === 'A' ? 0.35 : 0.30;
+    return talukaClass === 'A' ? 0.15 : 0.10;
+  }
+  function interestCapRate(sector, talukaClass, unitSize){
+    // Excel VGIP 26!D18: Sel. Thrust is checked first, then MSME
+    if (sector === 'Sel. Thrust') return 0.20;
+    if (unitSize === 'MSME') return 0.10;
+    if (sector === 'Thrust') {
+      if (unitSize === 'Large') return talukaClass === 'A' ? 0.20 : 0.15;
+      if (unitSize === 'Mega') return talukaClass === 'A' ? 0.25 : 0.20;
+      return talukaClass === 'A' ? 0.25 : 0.20;
+    }
+    if (sector === 'Sel. Thrust') return 0.20;
+    return talukaClass === 'A' ? 0.15 : 0.10;
+  }
+  function interestSubsidyRate(){ return 0.07; }
+  // Excel VGIP 26!E18 — "Benefit % Cap" shown against Power Tariff on the Out Put sheet
+  function powerCapRate(sector, talukaClass, unitSize){
+    if (sector === 'Sel. Thrust') return 0.20;
+    if (unitSize === 'MSME') return 0.25;
+    if (sector === 'Thrust') {
+      if (unitSize === 'Large') return talukaClass === 'A' ? 0.20 : 0.15;
+      if (unitSize === 'Mega') return talukaClass === 'A' ? 0.25 : 0.20;
+      return talukaClass === 'A' ? 0.25 : 0.20;
+    }
+    return talukaClass === 'A' ? 0.15 : 0.10;
+  }
+  function tenorYears(sector, unitSize){
+    if (unitSize === 'MSME') return 5;
+    if (sector === 'Gen') return 10;
+    if (unitSize === 'Large') return 8;
+    if (unitSize === 'Mega') return 10;
+    return 12;
+  }
+  function overallCapRate(sector, talukaClass, unitSize){
+    if (sector === 'Sel. Thrust') return talukaClass === 'A' ? 0.50 : 0.45;
+    if (unitSize === 'MSME') return talukaClass === 'A' ? 0.45 : 0.35;
+    if (sector === 'Thrust') {
+      if (unitSize === 'Large') return talukaClass === 'A' ? 0.35 : 0.25;
+      if (unitSize === 'Mega') return talukaClass === 'A' ? 0.35 : 0.30;
+      return talukaClass === 'A' ? 0.40 : 0.35;
+    }
+    return talukaClass === 'A' ? 0.20 : 0.15;
+  }
+  function yearlyCapRate(sector, talukaClass, unitSize){
+    if (sector === 'Sel. Thrust') {
+      if (unitSize === 'MSME') return talukaClass === 'A' ? 0.09 : 0.07;
+      if (unitSize === 'Large') return talukaClass === 'A' ? 0.065 : 0.06;
+      if (unitSize === 'Mega') return talukaClass === 'A' ? 0.05 : 0.045;
+      return talukaClass === 'A' ? 0.045 : 0.04;
+    }
+    if (unitSize === 'MSME') return talukaClass === 'A' ? 0.09 : 0.07;
+    if (sector === 'Thrust') {
+      if (unitSize === 'Large') return talukaClass === 'A' ? 0.045 : 0.035;
+      if (unitSize === 'Mega') return talukaClass === 'A' ? 0.035 : 0.03;
+      return talukaClass === 'A' ? 0.035 : 0.03;
+    }
+    return talukaClass === 'A' ? 0.02 : 0.015;
+  }
+  function annualAbsoluteCap(sector, unitSize, maxBenefit, tenor){
+    if (unitSize === 'MSME') return maxBenefit / tenor;
+    if (sector === 'Thrust') {
+      if (unitSize === 'Large') return 300;
+      if (unitSize === 'Mega') return 750;
+      return 1250;
+    }
+    return 150;
+  }
+
+  // ===== Updated Excel TL logic =====
+  // TL!A2 = 15% bank ROI
+  // TL!D2 = 2% spread
+  // TL!E2 = MIN(15% - 2%, VGIP!D17), with VGIP!D17 = 7%
+  // TL!A3 = (Loan Tenure - 1) * 12
+  // Months 1-12 are interest-only; principal repayment starts from month 13.
+  // Monthly principal = Loan Amount / Repayment Months (flat, e.g. 360 / 84 = 4.2857 Cr).
+  function buildInterestSubsidyYearly(loanAmt, loanTenure, bankROI, spreadPct=2, subsidyCapPct=7, moratoriumMonths=12, repayBasis='principal'){
+    const yearly = new Array(12).fill(0);
+    const detail = [];
+    if (loanAmt <= 0 || loanTenure <= 0) return yearly;
+
+    bankROI = Number.isFinite(bankROI) ? bankROI : 0.15;
+    const spread = Math.max(0, Number(spreadPct) || 0) / 100;
+    const policySubsidyCap = Math.max(0, Number(subsidyCapPct) || 0) / 100;
+    const subsidyRate = Math.max(0, Math.min(bankROI - spread, policySubsidyCap));
+
+    const moratorium = Math.max(0, Math.round(Number(moratoriumMonths) || 0));
+    const totalMonths = Math.max(0, Math.round(loanTenure * 12));
+    const amortMonths = Math.max(totalMonths - moratorium, 0);
+
+    // Month-wise backend schedule. During moratorium, principal remains unchanged
+    // and the subsidy is calculated on the full outstanding principal.
+    const useEMI = String(repayBasis).toLowerCase() === 'emi';
+    const flatPrincipal = amortMonths > 0 ? loanAmt / amortMonths : 0;
+    const mRate = bankROI / 12;
+    const fixedEMI = amortMonths > 0
+      ? (mRate > 0
+          ? loanAmt * mRate * Math.pow(1 + mRate, amortMonths) / (Math.pow(1 + mRate, amortMonths) - 1)
+          : loanAmt / amortMonths)
+      : 0;
+
+    let balance = loanAmt;
+    let totalGovtSubsidy = 0;
+    let totalBankSpreadInterest = 0;
+    let totalActualInterest = 0;
+    let totalPrincipal = 0;
+
+    for(let m=1; m<=totalMonths; m++){
+      const yearIndex = Math.floor((m-1)/12);
+      const inMoratorium = m <= moratorium;
+      let interest = balance * bankROI / 12;
+      let principal = 0;
+      let emi = 0;
+
+      // Repayment basis selected by the user:
+      //  - 'principal': flat principal = Loan Amount / Repayment Months (e.g. 360 / 84 = 4.2857 Cr),
+      //                 instalment = principal + interest (falls over time).
+      //  - 'emi'      : fixed EMI = PMT(ROI/12, Repayment Months, Loan) (e.g. 5.6110 Cr at 8%),
+      //                 principal = EMI - interest.
+      // Interest is always charged on the opening balance.
+      if(!inMoratorium && amortMonths > 0){
+        if(useEMI){
+          principal = Math.max(Math.min(fixedEMI - interest, balance), 0);
+          emi = fixedEMI;
+        } else {
+          principal = Math.min(flatPrincipal, balance);
+          emi = principal + interest;
+        }
+      }
+
+      const govtSubsidy = balance * subsidyRate / 12;
+      const bankSpreadInterest = balance * spread / 12;
+      const clientInterest = Math.max(interest - govtSubsidy, 0);
+
+      if(yearIndex < yearly.length) yearly[yearIndex] += govtSubsidy;
+      totalGovtSubsidy += govtSubsidy;
+      totalBankSpreadInterest += bankSpreadInterest;
+      totalActualInterest += interest;
+      totalPrincipal += principal;
+
+      const closingBalance = Math.max(balance - principal, 0);
+      detail.push({
+        month:m,
+        year:yearIndex+1,
+        disbursement:m===1 ? loanAmt : 0,
+        emi:inMoratorium ? 0 : (useEMI ? fixedEMI : (principal + interest)),
+        interest,
+        principal,
+        additionalPayment:0,
+        openingBalance:balance,
+        closingBalance,
+        subsidyRate,
+        govtSubsidy,
+        bankSpreadInterest,
+        clientInterest,
+        moratorium:inMoratorium
+      });
+      balance = closingBalance;
+    }
+
+    // Expose detail to the current calculation object without changing the
+    // year-wise incentive calculation used by the main output table.
+    buildInterestSubsidyYearly.lastDetail = detail;
+    buildInterestSubsidyYearly.lastMeta = {
+      subsidyRate, totalActualInterest, totalGovtSubsidy,
+      totalBankSpreadInterest, totalPrincipal, closingBalance:balance,
+      totalMonths, amortMonths,
+      repayBasis: useEMI ? 'emi' : 'principal',
+      monthlyValue: useEMI ? fixedEMI : flatPrincipal
+    };
+
+    return yearly;
+  }
+
+  let lastCalc = null;
+  let loanEdited = false;   // true when the user typed their own Term Loan amount
+
+  function recalcAll(){
+    let gfciTotal = 0, eiTotal = 0;
+    const investmentUnit = val('investment-unit');
+    const unitFactor = investmentUnit === 'lacs' ? 0.01 : 1;
+
+    document.querySelectorAll('#assets-table tbody tr[data-row]').forEach(row => {
+      const gfciInput = row.querySelector('.gfci-val');
+      const eiInput = row.querySelector('.ei-val');
+      if(!gfciInput || !eiInput) return;
+
+      const rowType = row.dataset.row || '';
+      if(rowType === 'Land' || rowType === 'CPP-Out'){
+        eiInput.value = 0;
+        eiInput.readOnly = true;
+      } else {
+        eiInput.readOnly = false;
+        if(document.getElementById('auto-efci').checked && document.activeElement === gfciInput){
+          eiInput.value = gfciInput.value;
+        }
+      }
+
+      gfciTotal += (parseFloat(gfciInput.value) || 0) * unitFactor;
+      eiTotal += (parseFloat(eiInput.value) || 0) * unitFactor;
+    });
+
+    document.getElementById('gfci-total').textContent = fmt(gfciTotal);
+    document.getElementById('ei-total').textContent = fmt(eiTotal);
+
+    const sector = val('sector') || 'Gen';
+    const taluka = val('taluka') || 'B';
+    const unitSize = val('unitsize') || 'MSME';
+
+    const roi = Math.max(0, num('roi')) / 100;
+    const spreadPct = Math.max(0, num('loan-spread'));
+    const interestCapInput = Math.max(0, num('int-sub-cap'));
+    const loanAuto = Math.max(0, eiTotal * 0.75);              // Term Loan = EFCI x 75%
+    const loanEl = document.getElementById('loan-amount');
+    const loanRaw = loanEl.value;
+    const loanManualSet = loanEdited && loanRaw !== '' && Number.isFinite(parseFloat(loanRaw));
+    const loanManual = loanManualSet ? Math.max(0, parseFloat(loanRaw)) : null;
+    const loanAmt = loanManualSet ? loanManual : loanAuto;      // user-typed amount overrides auto
+    if(!loanManualSet && document.activeElement !== loanEl) loanEl.value = loanAuto.toFixed(2);   // keep auto value in the field
+    document.getElementById('loan-hint').textContent = loanManualSet
+      ? 'Manual amount. Auto (75% of EFCI) would be ₹ ' + fmt(loanAuto) + ' Cr — clear the field to use auto.'
+      : 'Auto: 75% of EFCI.';
+    const loanTenure = Math.max(1, Math.round(num('loan-tenure') || 1));
+    const moratorium = Math.max(0, Math.round(num('loan-moratorium') || 0));
+    const repayBasis = val('loan-basis') === 'emi' ? 'emi' : 'principal';
+
+    const powerKVA = Math.max(0, num('power-kva'));
+    const capUtil = Math.max(0, num('cap-util')) / 100;
+
+    const talukaClass = taluka === 'A' ? 'A' : 'B';
+    const powerRate = talukaClass === 'A' ? 2 : 1;
+
+    const capRate = capitalRate(sector, talukaClass, unitSize);
+    const intCapRate = interestCapRate(sector, talukaClass, unitSize);
+    const subsidyRate = Math.max(0, Math.min(roi - spreadPct/100, interestCapInput/100));
+    const tenor = tenorYears(sector, unitSize);
+    const overallCap = overallCapRate(sector, talukaClass, unitSize);
+    const annualRate = yearlyCapRate(sector, talukaClass, unitSize);
+    const maxBenefit = eiTotal * overallCap;
+    const annualPercentageCap = eiTotal * annualRate;
+    const annualCapAbsolute = annualAbsoluteCap(sector, unitSize, maxBenefit, tenor);
+    const yearlyCap = Math.min(annualPercentageCap, annualCapAbsolute);
+
+    const capitalBase = eiTotal;                 // Excel: Capital subsidy base = Eligible Investment (EFCI) for all unit sizes
+    const capitalPerYearBeforeCap = capitalBase * (capRate / tenor);
+    const capitalPerYear = Math.min(capitalPerYearBeforeCap, yearlyCap);
+
+    const interestYearly = buildInterestSubsidyYearly(
+      loanAmt, loanTenure, roi, spreadPct, interestCapInput, moratorium, repayBasis
+    );
+    {
+      const mv = (buildInterestSubsidyYearly.lastMeta || {}).monthlyValue || 0;
+      document.getElementById('out-monthly-label').textContent =
+        repayBasis === 'emi' ? 'Monthly EMI (₹ Cr)' : 'Monthly Principal (₹ Cr)';
+      document.getElementById('out-monthly-value').value = mv.toFixed(2);
+    }
+
+    const units = powerKVA * 24 * 30 * capUtil;
+    const powerAnnualBenefit = units * powerRate * 12 / 1e7;
+
+    const selectedUnitLabel = investmentUnit === 'lacs' ? '₹ Lacs' : '₹ Cr';
+    document.getElementById('out-gfci').value = '₹ ' + fmt(gfciTotal) + ' Cr';
+    document.getElementById('out-ei').value = '₹ ' + fmt(eiTotal) + ' Cr';
+    document.getElementById('out-capital-rate').value = pct(capRate);
+    document.getElementById('out-interest-rate').value = interestCapInput.toFixed(2) + '%';
+    document.getElementById('out-tenor').value = tenor + ' Years';
+    document.getElementById('out-overall-cap').value = pct(overallCap);
+    document.getElementById('out-yearly-cap').value = '₹ ' + fmt(yearlyCap) + ' Cr / yr';
+    document.getElementById('out-max-benefit').value = '₹ ' + fmt(maxBenefit) + ' Cr';
+    document.getElementById('out-power-rate').value = '₹ ' + fmt(powerRate) + ' per unit';
+    document.getElementById('pw-units').value = fmt(units) + ' units';
+    document.getElementById('pw-rate').value = '₹ ' + fmt(powerRate) + ' per unit';
+    document.getElementById('pw-annual').value = '₹ ' + fmt(powerAnnualBenefit) + ' Cr';
+
+    const body = document.getElementById('schedule-body');
+    body.innerHTML = '';
+    let totCap=0, totInt=0, totPow=0, cum=0;
+    const rows=[];
+
+    for(let y=1; y<=tenor; y++){                    // rows only up to the policy tenor of the selected unit size (MSME 5, Large 8, ...)
+      const remainingOverall = Math.max(maxBenefit - cum, 0);
+      const availableThisYear = Math.min(yearlyCap, remainingOverall);
+
+      const H = y<=tenor ? Math.min(capitalPerYear, availableThisYear) : 0;
+      const remainingAfterCapital = Math.max(availableThisYear - H, 0);
+      const I = y<=tenor ? Math.min(interestYearly[y-1] || 0, remainingAfterCapital) : 0;
+      const remainingAfterInterest = Math.max(remainingAfterCapital - I, 0);
+      const J = y<=tenor ? Math.min(powerAnnualBenefit, remainingAfterInterest) : 0;
+
+      const K = H + I + J;
+      cum += K; totCap += H; totInt += I; totPow += J;
+      rows.push({y,H,I,J,K,cum});
+
+      const tr=document.createElement('tr');
+      tr.innerHTML=`<td class="row-label">Year ${y}</td><td>${fmt(H)}</td><td>${fmt(I)}</td><td>${fmt(J)}</td><td><b>${fmt(K)}</b></td><td>${fmt(cum)}</td>`;
+      body.appendChild(tr);
+    }
+
+    document.getElementById('tot-capital').textContent=fmt(totCap);
+    document.getElementById('tot-interest').textContent=fmt(totInt);
+    document.getElementById('tot-power').textContent=fmt(totPow);
+    document.getElementById('tot-total').textContent=fmt(totCap+totInt+totPow);
+
+    lastCalc={
+      clientName:val('client-name'),
+      productDetails:val('product-details'),
+      productName:val('product-name'),
+      district:val('district'),
+      area:val('area'),
+      sector,taluka,unitSize,
+      roi:roi*100,
+      loanAmt,loanAuto,loanManualSet,loanManual,loanTenure,moratorium,repayBasis,spreadPct,interestCapInput,
+      powerKVA,capUtil:capUtil*100,powerRate,
+      gfciTotal,eiTotal,capRate,intCapRate,subsidyRate,powerCapRate:powerCapRate(sector,talukaClass,unitSize),
+      tenor,overallCap,annualRate,annualPercentageCap,
+      annualAbsoluteCap:annualCapAbsolute,yearlyCap,maxBenefit,
+      capitalPerYear,capitalPerYearBeforeCap,
+      interestYearly,units,powerAnnualBenefit,rows,
+      interestDetail: buildInterestSubsidyYearly.lastDetail || [],
+      interestMeta: buildInterestSubsidyYearly.lastMeta || {},
+      investmentUnit:selectedUnitLabel
+    };
+  }
+  function auditRateBlock(c){
+    return `<div class="audit-block"><h3>1. Rate Derivation</h3>
+        <div class="audit-row"><span>Sector / Taluka / Unit Size</span><span>${c.sector} / Category ${c.taluka} / ${c.unitSize}</span></div>
+        <div class="audit-row"><span>Capital Subsidy Rate</span><span>${pct(c.capRate)}</span></div>
+        <div class="audit-row"><span>Interest Subsidy Maximum Cap</span><span>${pct(c.intCapRate)}</span></div>
+        <div class="audit-row"><span>Applicable Interest Subsidy Rate</span><span>${pct(c.subsidyRate)}</span></div>
+        <div class="audit-row"><span>Policy Tenor</span><span>${c.tenor} years</span></div>
+        <div class="audit-row"><span>Overall Cap on Incentive</span><span>${pct(c.overallCap)} of Eligible Investment</span></div>
+        <div class="audit-row"><span>Yearly Cap Rate</span><span>${pct(c.annualRate)}</span></div>
+      </div>`;
+  }
+  function auditInvestmentBlock(c){
+    return `<div class="audit-block"><h3>2. Investment Base</h3>
+        <div class="audit-row"><span>GFCI</span><span>₹ ${fmt(c.gfciTotal)} Cr</span></div>
+        <div class="audit-row"><span>Eligible Investment</span><span>₹ ${fmt(c.eiTotal)} Cr</span></div>
+        <div class="audit-row"><span>Term Loan Amount (calculated)</span><span>₹ ${fmt(c.loanAuto)} Cr</span></div>
+        <div class="audit-row"><span>Term Loan Formula</span><span>EFCI × 75%</span></div>
+        ${c.loanManualSet ? `<div class="audit-row"><span>Term Loan Amount (manual adjustment)</span><span>₹ ${fmt(c.loanManual)} Cr</span></div>
+        <div class="audit-row"><span>Term Loan Amount Used</span><span>₹ ${fmt(c.loanAmt)} Cr (manual)</span></div>` : ''}
+        <div class="audit-row"><span>Maximum Benefit</span><span>₹ ${fmt(c.maxBenefit)} Cr</span></div>
+        <div class="audit-row"><span>Yearly Cap = MIN(EI × Yearly Cap %, Absolute Ceiling)</span><span>₹ ${fmt(c.yearlyCap)} Cr / yr</span></div>
+      </div>`;
+  }
+  function auditTotalBlocks(c, startNo){
+    const rows=c.rows.filter(r=>r.y<=c.tenor);
+    const tCap=rows.reduce((a,r)=>a+r.H,0), tInt=rows.reduce((a,r)=>a+r.I,0), tPow=rows.reduce((a,r)=>a+r.J,0);
+    const total=tCap+tInt+tPow;
+    const share=v=> total>0 ? (v/total*100).toFixed(1)+'%' : '0.0%';
+    const used = c.maxBenefit>0 ? (total/c.maxBenefit*100).toFixed(1)+'% of Maximum Benefit' : '—';
+    return `<div class="audit-block"><h3>${startNo}. Total Incentive Breakdown</h3>
+        <div class="audit-row"><span>Capital Subsidy (total over ${c.tenor} years)</span><span>₹ ${fmt(tCap)} Cr &nbsp;(${share(tCap)})</span></div>
+        <div class="audit-row"><span>Interest Subsidy (total over ${c.tenor} years)</span><span>₹ ${fmt(tInt)} Cr &nbsp;(${share(tInt)})</span></div>
+        <div class="audit-row"><span>Power Benefit (total over ${c.tenor} years)</span><span>₹ ${fmt(tPow)} Cr &nbsp;(${share(tPow)})</span></div>
+        <div class="audit-row"><span>Total Incentive = Capital + Interest + Power</span><span>₹ ${fmt(total)} Cr</span></div>
+        <div class="audit-row"><span>Maximum Benefit (Overall Cap)</span><span>₹ ${fmt(c.maxBenefit)} Cr</span></div>
+        <div class="audit-row"><span>Overall Cap Utilised</span><span>${used}</span></div>
+        <div class="audit-row"><span>Unutilised Headroom</span><span>₹ ${fmt(Math.max(c.maxBenefit-total,0))} Cr</span></div>
+      </div>
+      <div class="audit-block"><h3>${startNo+1}. Year-wise Total</h3>
+        ${rows.map(r=>`<div class="audit-row"><span>Year ${r.y} — Capital ${fmt(r.H)} + Interest ${fmt(r.I)} + Power ${fmt(r.J)}</span><span>= ₹ ${fmt(r.K)} Cr &nbsp;(Cumulative ₹ ${fmt(r.cum)} Cr)</span></div>`).join('')}
+        <div class="audit-row"><span><b>Grand Total</b></span><span>₹ ${fmt(total)} Cr</span></div>
+      </div>`;
+  }
+  function showAudit(title, sub, html){
+    document.getElementById('audit-title').textContent=title;
+    document.getElementById('audit-sub').textContent=sub;
+    document.getElementById('audit-content').innerHTML=html;
+    document.getElementById('audit-modal').classList.add('open');
+  }
+  function openAudit(){
+    recalcAll();
+    const c=lastCalc;
+    const html=auditRateBlock(c)+auditInvestmentBlock(c)+`
+      <div class="audit-block"><h3>Year-wise Cap Priority</h3><div class="audit-row"><span>Applied order</span><span>Capital → Interest → Power</span></div><div class="audit-row"><span>Annual ceiling</span><span>MIN(Yearly Cap, Remaining Overall Cap)</span></div></div>
+      <div class="audit-block"><h3>3. Capital Subsidy</h3>
+        <div class="audit-row"><span>Annual Capital Subsidy before yearly cap</span><span>₹ ${fmt(c.capitalPerYearBeforeCap)} Cr</span></div>
+        <div class="audit-row"><span>Applied Capital Subsidy per eligible year</span><span>₹ ${fmt(c.capitalPerYear)} Cr</span></div>
+      </div>
+      <div class="audit-block"><h3>4. Interest Subsidy — Term Loan Inputs</h3>
+        <div class="audit-row"><span>Bank ROI (editable input)</span><span>${fmt(c.roi)}%</span></div>
+        <div class="audit-row"><span>Loan Tenure</span><span>${c.loanTenure} years</span></div>
+        <div class="audit-row"><span>Bank Non-subsidised Spread</span><span>${fmt(c.spreadPct)}%</span></div>
+        <div class="audit-row"><span>Interest Subsidy Cap Input</span><span>${fmt(c.interestCapInput)}%</span></div>
+        <div class="audit-row"><span>Moratorium</span><span>${c.moratorium} months</span></div>
+        <div class="audit-row"><span>Repayment Basis</span><span>${c.repayBasis==='emi'?'EMI':'Principal'}</span></div>
+        <div class="audit-row"><span>Subsidy rate = MIN(ROI − Spread, Interest Subsidy Cap)</span><span>${pct(c.subsidyRate)}</span></div>
+        ${c.interestYearly.slice(0,c.tenor).map((v,i)=>`<div class="audit-row"><span>Year ${i+1} — calculated interest subsidy</span><span>₹ ${fmt(v)} Cr</span></div>`).join('')}
+      </div>
+      <div class="audit-block"><h3>5. Power Benefit</h3>
+        <div class="audit-row"><span>Monthly Units = KVA × 24 × 30 × Utilisation</span><span>${fmt(c.units)} units</span></div>
+        <div class="audit-row"><span>Power Eligibility Rate</span><span>₹ ${fmt(c.powerRate)} / unit</span></div>
+        <div class="audit-row"><span>Annual Power Benefit before yearly cap</span><span>₹ ${fmt(c.powerAnnualBenefit)} Cr</span></div>
+      </div>`+auditTotalBlocks(c,6);
+    showAudit('Full Calculation Audit','Complete breakdown of every input, rate and formula used to derive the incentive.',html);
+  }
+  function openTotalBreakdown(){
+    recalcAll();
+    const c=lastCalc;
+    showAudit('Total Incentive Breakdown','How the total incentive is built up from capital subsidy, interest subsidy and power benefit.',
+      auditRateBlock(c)+auditInvestmentBlock(c)+auditTotalBlocks(c,3));
+  }
+
+  function openTLCalculation(silent){
+    recalcAll();
+    const c=lastCalc;
+    const detail=c.interestDetail || [];
+    const meta=c.interestMeta || {};
+
+    const summaryItems=[
+      ['Loan Amount','₹ '+fmt(c.loanAmt)+' Cr'],
+      ['Bank ROI',fmt(c.roi)+'%'],
+      ['Bank Spread',fmt(c.spreadPct)+'%'],
+      ['Subsidy Rate',pct(c.subsidyRate)],
+      ['Loan Tenure',c.loanTenure+' Years'],
+      ['Moratorium',c.moratorium+' Months'],
+      ['Amortisation',Math.max(c.loanTenure*12-c.moratorium,0)+' Months'],
+      ['Repayment Basis',c.repayBasis==='emi'?'EMI':'Principal'],
+      [c.repayBasis==='emi'?'Monthly EMI':'Monthly Principal','₹ '+fmt(meta.monthlyValue||0)+' Cr'],
+      ['Total Actual Interest','₹ '+fmt(meta.totalActualInterest||0)+' Cr'],
+      ['Govt. Interest Subsidy','₹ '+fmt(meta.totalGovtSubsidy||0)+' Cr'],
+      ['Bank Spread Interest','₹ '+fmt(meta.totalBankSpreadInterest||0)+' Cr'],
+      ['Principal Repaid','₹ '+fmt(meta.totalPrincipal||0)+' Cr'],
+      ['Closing Principal','₹ '+fmt(meta.closingBalance||0)+' Cr']
+    ];
+    document.getElementById('tl-summary-grid').innerHTML=summaryItems.map(x=>
+      `<div class="tl-summary-card"><small>${x[0]}</small><strong>${x[1]}</strong></div>`
+    ).join('');
+
+    document.getElementById('tl-formula').innerHTML=
+      `<b>Backend logic:</b> Monthly Interest = Opening Principal × ROI ÷ 12 &nbsp;|&nbsp;
+       Govt. Interest Subsidy = Opening Principal × MIN(ROI − Bank Spread, Subsidy Cap) ÷ 12 &nbsp;|&nbsp;
+       Client Interest = Actual Interest − Govt. Subsidy &nbsp;|&nbsp;
+       ${c.repayBasis==='emi'
+         ? 'Basis = EMI: Monthly EMI = PMT(ROI ÷ 12, Repayment Months, Loan Amount); Principal = EMI − Interest.'
+         : 'Basis = Principal: Monthly Principal = Loan Amount ÷ Repayment Months (Tenure × 12 − Moratorium), e.g. ₹360 Cr ÷ 84 = ₹4.2857 Cr.'}`;
+
+    const body=document.getElementById('tl-detail-body');
+    body.innerHTML='';
+    let sumInterest=0,sumGovt=0,sumSpread=0,sumPrincipal=0,sumClient=0;
+    detail.forEach(r=>{
+      sumInterest+=r.interest; sumGovt+=r.govtSubsidy; sumSpread+=r.bankSpreadInterest;
+      sumPrincipal+=r.principal; sumClient+=r.clientInterest;
+      const tr=document.createElement('tr');
+      if(r.moratorium) tr.className='moratorium-row';
+      if(r.month%12===0) tr.classList.add('year-end');
+      tr.innerHTML=`
+        <td>${r.month}</td>
+        <td>${fmt(r.disbursement)}</td>
+        <td>${fmt(r.emi)}</td>
+        <td>${fmt(r.interest)}</td>
+        <td>${fmt(r.principal)}</td>
+        <td>${fmt(r.additionalPayment)}</td>
+        <td>${fmt(r.closingBalance)}</td>
+        <td>${pct(r.subsidyRate)}</td>
+        <td>${fmt(r.govtSubsidy)}</td>
+        <td>${fmt(r.bankSpreadInterest)}</td>
+        <td>${fmt(r.clientInterest)}</td>`;
+      body.appendChild(tr);
+    });
+    document.getElementById('tl-detail-foot').innerHTML=`
+      <tr>
+        <td>Total</td><td>${fmt(c.loanAmt)}</td><td>—</td><td>${fmt(sumInterest)}</td>
+        <td>${fmt(sumPrincipal)}</td><td>0.00</td><td>${fmt(detail.length?detail[detail.length-1].closingBalance:0)}</td>
+        <td>—</td><td>${fmt(sumGovt)}</td><td>${fmt(sumSpread)}</td><td>${fmt(sumClient)}</td>
+      </tr>`;
+
+    const annualBody=document.getElementById('tl-annual-body');
+    annualBody.innerHTML='';
+    for(let y=1;y<=Math.ceil(detail.length/12);y++){
+      const rows=detail.filter(r=>r.year===y);
+      if(!rows.length) continue;
+      const opening=rows[0].openingBalance;
+      const closing=rows[rows.length-1].closingBalance;
+      const interest=rows.reduce((a,r)=>a+r.interest,0);
+      const govt=rows.reduce((a,r)=>a+r.govtSubsidy,0);
+      const spread=rows.reduce((a,r)=>a+r.bankSpreadInterest,0);
+      const principal=rows.reduce((a,r)=>a+r.principal,0);
+      annualBody.insertAdjacentHTML('beforeend',`
+        <tr>
+          <td>Year ${y}</td><td>${fmt(opening)}</td><td>${fmt(interest)}</td>
+          <td>${fmt(govt)}</td><td>${fmt(spread)}</td><td>${fmt(principal)}</td><td>${fmt(closing)}</td>
+        </tr>`);
+    }
+    if(!silent) document.getElementById('tl-calculation-modal').classList.add('open');
+  }
+
+  function closeTLCalculation(){
+    document.getElementById('tl-calculation-modal').classList.remove('open');
+  }
+
+  function closeAudit(){ document.getElementById('audit-modal').classList.remove('open'); }
+
+  (function initLoanAmountField(){
+    const el = document.getElementById('loan-amount');
+    if(!el) return;
+    el.addEventListener('input', () => { loanEdited = el.value !== ''; });
+    el.addEventListener('blur', () => { if(el.value === ''){ loanEdited = false; recalcAll(); } });
+  })();
+
+  // ===== Product Details -> Sector auto-select (VGIP 2026) =====
+  // Thrust Sectors -> Sector = Thrust ; Selected Thrust Sectors (para 1.7) -> Sector = Sel. Thrust ;
+  // anything else typed in Product Details -> Sector = General.
+  const THRUST_PRODUCTS = [
+    'Green Energy Ecosystem',
+    'Mobility',
+    'Capital Equipment',
+    'Metals and Minerals',
+    'Textiles and Apparels',
+    'Sustainability',
+    'Agro Processing',
+    'Chemicals*',
+    'Healthcare',
+    'Ancillary Units to Semicon Industries',
+    'Nuclear Power Equipment (incl. SMR)',
+    'Vehicle Scrapping Facilities',
+    'Electronics Waste Recycling Units',
+    'Textile waste Recycling Units',
+    'Shipping Container manufacturing',
+    'Heavy Earth Moving Equipment'
+  ];
+  const SEL_THRUST_PRODUCTS = [
+    'Sports goods and equipment manufacturing',
+    'Toys Manufacturing',
+    'Footwear manufacturing',
+    'Robot manufacturing',
+    'Drone manufacturing',
+    'Any other sector recommended by the Committee (para 12(b) of G.R.), after Government approval'
+  ];
+  (function initProductSectorPicker(){
+    const input  = document.getElementById('product-details');
+    const sector = document.getElementById('sector');
+    if(!input || !sector) return;
+
+    const modal = document.getElementById('pc-modal');
+    const pcProduct = document.getElementById('pc-product');
+    const pcSector  = document.getElementById('pc-sector');
+    const pcNote    = document.getElementById('pc-note');
+    const pcError   = document.getElementById('pc-error');
+
+    const NAMES = {'Thrust':'Thrust Sector','Sel. Thrust':'Selected Thrust Sector','Gen':'General Sector'};
+    const NOTES = {
+      'Thrust':'This product sector is in the Thrust Sector list, so Thrust sector rates will apply.',
+      'Sel. Thrust':'This product sector is in the Selected Thrust Sector list, so Selected Thrust rates will apply.',
+      'Gen':'This product sector is not in the Thrust / Selected Thrust lists, so General sector rates will apply.'
+    };
+    const norm = t => String(t||'').replace(/\*/g,'').replace(/\s+/g,' ').trim().toLowerCase();
+    const groups = [
+      {code:'Thrust',      title:'Thrust Sectors',          list:THRUST_PRODUCTS},
+      {code:'Sel. Thrust', title:'Selected Thrust Sectors', list:SEL_THRUST_PRODUCTS}
+    ];
+    function sectorFor(text){
+      const n = norm(text);
+      for(const g of groups){ if(g.list.some(x => norm(x) === n)) return g.code; }
+      return 'Gen';                       // not a Thrust / Selected Thrust sector -> General
+    }
+
+    let state = {product:'', sector: sector.value || 'Gen'};   // last confirmed product + sector
+    let pending = null;                                         // popup currently open
+    let internal = false;                                       // true while the script itself changes Sector
+    const lockBadge = document.getElementById('sector-lock-badge');
+    const lockHint  = document.getElementById('sector-lock-hint');
+    function lockSector(on){
+      sector.disabled = !!on;
+      if(lockBadge) lockBadge.style.display = on ? 'inline' : 'none';
+      if(lockHint)  lockHint.style.display  = on ? 'block'  : 'none';
+    }
+    window.pcResetState = () => { state = {product:'', sector: sector.value || 'Gen'}; lockSector(false); };
+
+    function setSector(code){
+      if(sector.value !== code){
+        internal = true;
+        sector.value = code;
+        sector.dispatchEvent(new Event('change', {bubbles:true}));
+        internal = false;
+      }
+    }
+
+    // ---------- confirmation popup ----------
+    function showPending(){
+      pcSector.textContent = NAMES[pending.code] || pending.code;
+      pcNote.textContent = NOTES[pending.code] || '';
+      if(pending.source === 'sector'){                    // sector picked by hand: flag a mismatch with the product
+        const derived = pcProduct.value.trim() ? sectorFor(pcProduct.value) : null;
+        if(derived && derived !== pending.code){
+          pcNote.textContent += ' Note: as per the product lists, "' + pcProduct.value.trim() + '" falls under the ' + NAMES[derived] + '.';
+        }
+      }
+    }
+    function openConfirm(product, code, editable, source){
+      pending = {code, editable, source};
+      pcProduct.value = product;
+      pcProduct.readOnly = !editable;
+      pcError.textContent = '';
+      showPending();
+      closeMenu();
+      modal.classList.add('open');
+      if(editable) setTimeout(() => pcProduct.focus(), 0);
+    }
+    function closeConfirm(){ modal.classList.remove('open'); pending = null; }
+    function confirmPending(){
+      if(!pending) return;
+      const val = pcProduct.value.trim();
+      if(pending.editable && !val){ pcError.textContent = 'Please enter the product sector.'; return; }
+      input.value = val;
+      setSector(pending.code);
+      state = {product: val, sector: pending.code};
+      lockSector(true);                                 // sector is locked once confirmed
+      closeConfirm();
+      recalcAll();
+    }
+    function cancelPending(){
+      if(!pending) return;
+      input.value = state.product;
+      setSector(state.sector);
+      closeConfirm();
+      recalcAll();
+    }
+    document.getElementById('pc-confirm').addEventListener('click', confirmPending);
+    document.getElementById('pc-cancel').addEventListener('click', cancelPending);
+    pcProduct.addEventListener('input', () => {
+      pcError.textContent = '';
+      if(pending && pending.source !== 'sector'){       // product typed in the popup decides the sector
+        pending.code = pcProduct.value.trim() ? sectorFor(pcProduct.value) : 'Gen';
+      }
+      if(pending) showPending();
+    });
+    pcProduct.addEventListener('keydown', e => { if(e.key === 'Enter'){ e.preventDefault(); confirmPending(); } });
+    document.addEventListener('keydown', e => { if(e.key === 'Escape' && pending) cancelPending(); });
+
+    // ---------- product dropdown ----------
+    const menu = document.createElement('div');
+    menu.className = 'pd-menu';
+    document.body.appendChild(menu);
+
+    function place(){
+      const r = input.getBoundingClientRect();
+      menu.style.left = r.left + 'px';
+      menu.style.top = (r.bottom + 4) + 'px';
+      menu.style.width = Math.max(r.width, 340) + 'px';
+    }
+    function render(filter){
+      const f = norm(filter);
+      let html = '';
+      groups.forEach(g => {
+        const items = g.list.filter(x => !f || norm(x).includes(f));
+        if(!items.length) return;
+        html += `<div class="pd-head">${g.title}</div>` +
+          items.map(x => `<div class="pd-item" data-v="${x.replace(/"/g,'&quot;')}">${x}</div>`).join('');
+      });
+      html += `<div class="pd-head">Other</div><div class="pd-item" data-other="1">Other<small>Not in the Thrust / Selected Thrust lists — General sector (type your sector)</small></div>`;
+      menu.innerHTML = html;
+      place();
+      menu.classList.add('open');
+    }
+    function closeMenu(){ menu.classList.remove('open'); }
+
+    input.addEventListener('focus', () => render(''));
+    input.addEventListener('click', () => render(sectorFor(input.value) !== 'Gen' ? '' : input.value));
+    input.addEventListener('input', () => {
+      render(input.value);
+      setSector(input.value.trim() ? sectorFor(input.value) : 'Gen');   // live preview of the sector
+    });
+    // typed product committed (Enter / leaving the field) -> confirmation popup
+    input.addEventListener('change', () => {
+      if(pending) return;
+      const v = input.value.trim();
+      if(!v){ setSector('Gen'); state = {product:'', sector:'Gen'}; lockSector(false); return; }
+      const code = sectorFor(v);
+      if(v === state.product && code === state.sector) return;           // already confirmed
+      openConfirm(v, code, code === 'Gen', 'product');
+    });
+    // mousedown (not click) so the input keeps focus and the choice is read before the menu closes
+    menu.addEventListener('mousedown', e => {
+      const it = e.target.closest('.pd-item');
+      if(!it) return;
+      e.preventDefault();
+      if(it.dataset.other){
+        const typed = input.value.trim();
+        openConfirm(sectorFor(typed) === 'Gen' ? typed : '', 'Gen', true, 'other');
+        return;
+      }
+      const v = it.dataset.v;
+      input.value = v;
+      const code = sectorFor(v);
+      setSector(code);
+      openConfirm(v, code, false, 'pick');
+    });
+    document.addEventListener('mousedown', e => {
+      if(e.target !== input && !menu.contains(e.target)) closeMenu();
+    });
+    input.addEventListener('keydown', e => { if(e.key === 'Escape' || e.key === 'Tab') closeMenu(); });
+    window.addEventListener('scroll', e => { if(!menu.contains(e.target)) closeMenu(); }, true);
+    window.addEventListener('resize', closeMenu);
+
+    // Sector chosen manually (Thrust / Sel. Thrust / General) -> confirm the product too
+    sector.addEventListener('change', () => {
+      if(internal || pending) return;
+      openConfirm(input.value.trim(), sector.value, true, 'sector');
+    });
+  })();
+
+  document.addEventListener('keydown',function(e){
+    if(e.key==='Escape'){
+      closeTLCalculation();
+      if(typeof closeAudit==='function') closeAudit();
+    }
+  });
+
+  function exportExcel(){
+    recalcAll();
+    const c = lastCalc;
+    const wb = XLSX.utils.book_new();
+    const summary = [
+      ['VGIP 2026 Incentive Calculator'],
+      ['Client', c.clientName], ['Product Sector', c.productDetails], ['Product Name', c.productName], ['District', c.district], ['Taluka', c.area],
+      ['Sector', c.sector], ['Taluka Category', c.taluka], ['Unit Size', c.unitSize],
+      ['GFCI (₹ Cr)', c.gfciTotal], ['EFCI (₹ Cr)', c.eiTotal],
+      ['Capital Subsidy Rate', c.capRate], ['Interest Subsidy Cap Rate', c.intCapRate],
+      ['Subsidy Tenor (yrs)', c.tenor], ['Overall Cap', c.overallCap],
+      ['Term Loan (₹ Cr)', c.loanAmt], ['ROI (%)', c.roi], ['Bank Spread (%)', c.spreadPct], ['Interest Subsidy Cap (%)', c.interestCapInput], ['Loan Tenure (Years)', c.loanTenure], ['Moratorium (Months)', c.moratorium], ['Max Benefit (₹ Cr)', c.maxBenefit], ['Yearly Cap (₹ Cr)', c.yearlyCap], []
+    ];
+    const header = ['Year', 'Capital Subsidy', 'Interest Subsidy', 'Power Benefit', 'Total', 'Cumulative'];
+    const rows = c.rows.map(r => [r.y, r.H, r.I, r.J, r.K, r.cum]);
+    const ws = XLSX.utils.aoa_to_sheet([...summary, header, ...rows]);
+    XLSX.utils.book_append_sheet(wb, ws, 'VGIP 26');
+    XLSX.writeFile(wb, `VGIP26_${(c.clientName || 'Client').replace(/\s+/g,'_')}.xlsx`);
+  }
+
+  // ===== Calculation Check: all unit sizes (MSME / Large / Mega / Ultra Mega) =====
+  // This is a checking/report utility only. It uses the current GFCI/EFCI, loan,
+  // ROI, loan tenure and power inputs and shows how Capital -> Interest -> Power
+  // are sequentially capped by the yearly ceiling and overall ceiling.
+  function buildCheckCalculations(){
+    recalcAll();
+    const c = lastCalc || {};
+    const sector = val('sector') || 'Gen';
+    const taluka = (val('taluka') || 'B') === 'A' ? 'A' : 'B';
+    const sizes = ['MSME','Large','Mega','Ultra Mega'];
+    const out = [];
+    sizes.forEach(unitSize => {
+      const capRate = capitalRate(sector, taluka, unitSize);
+      const intCapRate = interestCapRate(sector, taluka, unitSize);
+      const policyTenor = tenorYears(sector, unitSize);
+      const overallCap = overallCapRate(sector, taluka, unitSize);
+      const annualRate = yearlyCapRate(sector, taluka, unitSize);
+      const maxBenefit = c.eiTotal * overallCap;
+      const annualPercentageCap = c.eiTotal * annualRate;
+      const annualCapAbsolute = annualAbsoluteCap(sector, unitSize, maxBenefit, policyTenor);
+      const yearlyCap = Math.min(annualPercentageCap, annualCapAbsolute);
+      const capitalBase = c.eiTotal;
+      const capitalBeforeCap = capitalBase * (capRate / policyTenor);
+      const capitalPerYear = Math.min(capitalBeforeCap, yearlyCap);
+      const interestYearly = buildInterestSubsidyYearly(c.loanAmt, c.loanTenure, c.roi/100, c.spreadPct, c.interestCapInput, c.moratorium, c.repayBasis);
+      const powerAnnual = c.units * c.powerRate * 12 / 1e7;
+      let cumulative = 0;
+      const rows = [];
+      for(let y=1; y<=policyTenor; y++){
+        const remainingOverall = Math.max(maxBenefit - cumulative, 0);
+        const yearlyAvailable = Math.min(yearlyCap, remainingOverall);
+        const H = y<=policyTenor ? Math.min(capitalPerYear, yearlyAvailable) : 0;
+        const remAfterCap = Math.max(yearlyAvailable - H, 0);
+        const I = y<=policyTenor ? Math.min(interestYearly[y-1] || 0, remAfterCap) : 0;
+        const remAfterInterest = Math.max(remAfterCap - I, 0);
+        const J = y<=policyTenor ? Math.min(powerAnnual, remAfterInterest) : 0;
+        const K = H + I + J;
+        cumulative += K;
+        rows.push({y,H,I,J,K,cum:cumulative});
+      }
+      out.push({unitSize,capRate,intCapRate,policyTenor,overallCap,annualRate,maxBenefit,annualPercentageCap,annualCapAbsolute,yearlyCap,capitalBase,capitalBeforeCap,capitalPerYear,interestYearly,powerAnnual,rows});
+    });
+    return {client:val('client-name'),productSector:val('product-details'),productName:val('product-name'),sector,taluka,roi:num('roi'),loanTenure:num('loan-tenure'),loanAmt:c.loanAmt,eiTotal:c.eiTotal,gfciTotal:c.gfciTotal,powerKVA:num('power-kva'),capUtil:num('cap-util'),powerRate:c.powerRate,units:c.units,results:out};
+  }
+
+  function fmtCheck(v){ return Number(v||0).toFixed(2); }
+  function pctCheck(v){ return (Number(v||0)*100).toFixed(2) + '%'; }
+  function checkReportHTML(d){
+    const esc = x => String(x ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+    return `<!doctype html><html><head><meta charset="utf-8"><title>VGIP 2026 Calculation Check</title>
+      <style>
+        @page{size:A4 landscape;margin:12mm}body{font-family:Arial,sans-serif;color:#17233b;margin:0;font-size:10px}
+        h1{font-size:20px;margin:0 0 4px}h2{font-size:15px;margin:18px 0 7px;border-bottom:2px solid #16a085;padding-bottom:4px}
+        h3{font-size:12px;margin:12px 0 5px}.meta{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin:10px 0 14px}
+        .box{border:1px solid #ccd8d5;padding:6px;background:#f6faf9}.formula{background:#f2f5f7;border-left:3px solid #16a085;padding:7px;margin:5px 0;line-height:1.45}
+        table{border-collapse:collapse;width:100%;margin:6px 0 12px}th,td{border:1px solid #cbd5d1;padding:5px;text-align:right}th{background:#e4f0ec;text-align:center}td:first-child,th:first-child{text-align:left}
+        .note{font-size:9px;color:#4b5563}.page{page-break-after:always}.page:last-child{page-break-after:auto}
+      </style></head><body>
+      <h1>VGIP 2026 — Calculation Check Report</h1>
+      <div class="note">For checking / validation only. The report shows the formula flow for all project sizes using the current investment, loan and power inputs.</div>
+      <div class="meta">
+        <div class="box"><b>Client</b><br>${esc(d.client||'-')}</div><div class="box"><b>Product Sector</b><br>${esc(d.productSector||'-')}</div><div class="box"><b>Product Name</b><br>${esc(d.productName||'-')}</div><div class="box"><b>Sector</b><br>${esc(d.sector)}</div>
+        <div class="box"><b>Taluka Category</b><br>Category ${esc(d.taluka)}</div><div class="box"><b>GFCI</b><br>₹ ${fmtCheck(d.gfciTotal)} Cr</div>
+        <div class="box"><b>EFCI</b><br>₹ ${fmtCheck(d.eiTotal)} Cr</div><div class="box"><b>Term Loan</b><br>₹ ${fmtCheck(d.loanAmt)} Cr</div>
+        <div class="box"><b>ROI</b><br>${fmtCheck(d.roi)}%</div><div class="box"><b>Loan Tenure</b><br>${fmtCheck(d.loanTenure)} years</div>
+      </div>
+      <div class="formula"><b>Common sequence applied every year:</b> Capital first → Interest from remaining yearly cap → Power from remaining yearly cap. The yearly total is also limited by the remaining overall incentive cap.</div>
+      ${d.results.map((r,idx)=>`<div class="page">
+        <h2>${idx+1}. ${esc(r.unitSize)} — Rate & Formula Check</h2>
+        <table><tr><th>Item</th><th>Value</th><th>How it is calculated</th></tr>
+        <tr><td>Capital Subsidy Rate</td><td>${pctCheck(r.capRate)}</td><td>Applicable policy rate for Category ${esc(d.taluka)}</td></tr>
+        <tr><td>Interest Subsidy Cap</td><td>${pctCheck(r.intCapRate)}</td><td>Policy maximum cap</td></tr>
+        <tr><td>Policy Tenor</td><td>${r.policyTenor} years</td><td>Scheme / project-size policy tenor</td></tr>
+        <tr><td>Overall Cap</td><td>${pctCheck(r.overallCap)}</td><td>EFCI × overall cap</td></tr>
+        <tr><td>Maximum Benefit</td><td>₹ ${fmtCheck(r.maxBenefit)} Cr</td><td>${fmtCheck(d.eiTotal)} × ${pctCheck(r.overallCap)}</td></tr>
+        <tr><td>Yearly Percentage Cap</td><td>₹ ${fmtCheck(r.annualPercentageCap)} Cr</td><td>EFCI × yearly cap rate (${pctCheck(r.annualRate)})</td></tr>
+        <tr><td>Yearly Cap Applied</td><td>₹ ${fmtCheck(r.yearlyCap)} Cr</td><td>MIN(yearly percentage cap, absolute ceiling)</td></tr>
+        <tr><td>Capital Base</td><td>₹ ${fmtCheck(r.capitalBase)} Cr</td><td>Eligible Investment = EFCI</td></tr>
+        <tr><td>Capital / Year before cap</td><td>₹ ${fmtCheck(r.capitalBeforeCap)} Cr</td><td>Capital Base × Capital Rate ÷ Policy Tenor</td></tr>
+        <tr><td>Capital / Year applied</td><td>₹ ${fmtCheck(r.capitalPerYear)} Cr</td><td>MIN(capital before cap, yearly cap)</td></tr>
+        <tr><td>Power Rate</td><td>₹ ${fmtCheck(d.powerRate)} / unit</td><td>Category ${esc(d.taluka)}: ${d.taluka==='A'?'₹2':'₹1'} / unit</td></tr>
+        <tr><td>Annual Power before cap</td><td>₹ ${fmtCheck(r.powerAnnual)} Cr</td><td>Units × Power Rate × 12 ÷ 10,000,000</td></tr></table>
+        <div class="formula"><b>Year-wise capping:</b> Remaining Overall = Max Benefit − previous cumulative. Available for year = MIN(Yearly Cap, Remaining Overall). Then Capital → Interest → Power, each using the remaining amount.</div>
+        <h3>Year-wise Incentive Schedule</h3>
+        <table><tr><th>Year</th><th>Capital</th><th>Interest</th><th>Power</th><th>Total</th><th>Cumulative</th></tr>
+        ${r.rows.map(x=>`<tr><td>Year ${x.y}</td><td>${fmtCheck(x.H)}</td><td>${fmtCheck(x.I)}</td><td>${fmtCheck(x.J)}</td><td><b>${fmtCheck(x.K)}</b></td><td>${fmtCheck(x.cum)}</td></tr>`).join('')}
+        </table>
+        <div class="note">Interest uses the editable Term Loan ROI and Loan Tenure inputs. Power uses Category A = ₹2/unit and Category B = ₹1/unit. This report is intended only to inspect the calculation flow.</div>
+      </div>`).join('')}
+      </body></html>`;
+  }
+
+  function openCalculationCheckPDF(){
+    const d=buildCheckCalculations();
+    const w=window.open('','_blank');
+    if(!w){ alert('Please allow pop-ups for this calculator to generate the Calculation Check PDF.'); return; }
+    w.document.open(); w.document.write(checkReportHTML(d)); w.document.close();
+    setTimeout(()=>{w.focus(); w.print();},500);
+  }
+
+  function exportCalculationCheckExcel(){
+    const d=buildCheckCalculations();
+    const wb=XLSX.utils.book_new();
+    d.results.forEach(r=>{
+      const rows=[
+        ['VGIP 2026 — Calculation Check (For Checking Only)'],
+        ['Project Size',r.unitSize],['Product Sector',d.productSector],['Product Name',d.productName],['Sector',d.sector],['Taluka Category',d.taluka],['GFCI (₹ Cr)',d.gfciTotal],['EFCI (₹ Cr)',d.eiTotal],['Term Loan (₹ Cr)',d.loanAmt],['ROI (%)',d.roi],['Loan Tenure (Years)',d.loanTenure],['Power Rate (₹/unit)',d.powerRate],[],
+        ['FORMULA / INPUT','VALUE','CALCULATION / NOTE'],
+        ['Capital Subsidy Rate',r.capRate,'Applicable policy rate'],
+        ['Interest Subsidy Cap',r.intCapRate,'Policy maximum cap'],
+        ['Policy Tenor (Years)',r.policyTenor,'Scheme / project-size tenor'],
+        ['Overall Cap',r.overallCap,'EFCI × overall cap'],
+        ['Maximum Benefit (₹ Cr)',r.maxBenefit,'EFCI × overall cap'],
+        ['Yearly Percentage Cap (₹ Cr)',r.annualPercentageCap,'EFCI × yearly cap rate'],
+        ['Absolute Yearly Ceiling (₹ Cr)',r.annualCapAbsolute,'Policy absolute ceiling'],
+        ['Yearly Cap Applied (₹ Cr)',r.yearlyCap,'MIN(percentage cap, absolute ceiling)'],
+        ['Capital Base (₹ Cr)',r.capitalBase,'Eligible Investment = EFCI'],
+        ['Capital / Year before cap (₹ Cr)',r.capitalBeforeCap,'Capital Base × Capital Rate ÷ Policy Tenor'],
+        ['Capital / Year applied (₹ Cr)',r.capitalPerYear,'MIN(capital before cap, yearly cap)'],
+        ['Annual Power before cap (₹ Cr)',r.powerAnnual,'Units × Power Rate × 12 ÷ 10,000,000'],[],
+        ['YEAR','CAPITAL','INTEREST','POWER','TOTAL','CUMULATIVE']
+      ];
+      r.rows.forEach(x=>rows.push([x.y,x.H,x.I,x.J,x.K,x.cum]));
+      const ws=XLSX.utils.aoa_to_sheet(rows); ws['!cols']=[{wch:34},{wch:18},{wch:55},{wch:14},{wch:14},{wch:14}];
+      XLSX.utils.book_append_sheet(wb,ws,r.unitSize.substring(0,31));
+    });
+    XLSX.writeFile(wb,`VGIP26_Calculation_Check_All_Sizes.xlsx`);
+  }
+
+  // ===== Print / Save PDF — mirrors the Excel "Out Put" sheet (no input sections, no year-wise table) =====
+  function escHtml(t){ return String(t==null?'':t).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch])); }
+  function selText(id){ const e=document.getElementById(id); return e && e.selectedIndex>=0 && e.value ? e.options[e.selectedIndex].text : ''; }
+  function buildPrintSheet(){
+    recalcAll();
+    const c = lastCalc; if(!c) return;
+    const f = n => (Math.round(n*100)/100).toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2});
+    const unitFactor = val('investment-unit') === 'lacs' ? 0.01 : 1;
+
+    // asset rows (GFCI / Eligible Investment, in ₹ Cr)
+    const labels = {'Land':'Land','Building':'Building','P&M':'Plant & Machineries','Utility':'Utility',
+                    'CPP-In':'Captive Power Plant Within Premises','CPP-Out':'Captive Power Plant outside Premises'};
+    let assetRows = '';
+    document.querySelectorAll('#assets-table tbody tr[data-row]').forEach(row => {
+      const t = row.dataset.row;
+      const g = (parseFloat(row.querySelector('.gfci-val').value)||0) * unitFactor;
+      const e = (parseFloat(row.querySelector('.ei-val').value)||0) * unitFactor;
+      let label = labels[t];
+      if(!label){                                   // "Other" rows: show only when used
+        if(!g && !e) return;
+        const nm = row.querySelector('.other-name');
+        label = (nm && nm.value.trim()) || 'Other';
+      }
+      assetRows += `<tr><td>${escHtml(label)}</td><td class="n">${f(g)}</td><td class="n">${f(e)}</td></tr>`;
+    });
+
+    const totCap = c.rows.reduce((a,r)=>a+r.H,0), totInt = c.rows.reduce((a,r)=>a+r.I,0), totPow = c.rows.reduce((a,r)=>a+r.J,0);
+    const totAll = totCap + totInt + totPow;
+    const canTakeMax = totAll >= c.maxBenefit - 1e-6 ? 'Yes' : 'No';
+    const company = (c.clientName || '').trim() || 'Company Name';
+    const sectorLabel = selText('sector') || c.sector;
+    const talukaTxt = [selText('area'), selText('district')].filter(Boolean).join(', ');
+
+    const logoEl = document.querySelector('.header-logo img');
+    const logoSrc = logoEl ? logoEl.src : '';
+    const today = new Date();
+    const dstr = String(today.getDate()).padStart(2,'0') + '-' + String(today.getMonth()+1).padStart(2,'0') + '-' + today.getFullYear();
+    const kv = (k,v) => `<tr><td class="k">${k}</td><td class="v">${escHtml(v)}</td></tr>`;
+
+    document.getElementById('print-sheet').innerHTML = `
+      ${logoSrc ? `<img class="ps-wm" src="${logoSrc}" alt="">` : ''}
+      <div class="ps-body">
+        <div class="ps-title">Estimated Incentive Summary</div>
+        <div class="ps-sub"><b>Viksit Gujarat Industrial Policy 2026 (VGIP 26) — ${escHtml(c.unitSize)}</b><br>Prepared for ${escHtml(company)}. (Amount in ₹ Cr)</div>
+
+        <div class="ps-sec">1. Project Details</div>
+        <table><tbody>
+          ${kv('Company Name', company)}
+          ${kv('Product', c.productName)}
+          ${kv('Sector', sectorLabel)}
+          ${kv('Taluka', talukaTxt)}
+          ${kv('Taluka Category', c.taluka)}
+          ${kv('Project Category', c.unitSize)}
+          ${kv('Term Loan (In Cr)', f(c.loanAmt))}
+          ${kv('Loan Tenure (Years)', c.loanTenure)}
+          ${kv('Power (KVA)', c.powerKVA)}
+        </tbody></table>
+
+        <div class="ps-sec">2. Fixed Capital Investment</div>
+        <table>
+          <thead><tr><th style="width:52%;">Particulars</th><th>GFCI (Indicative)</th><th>Eligible Investment</th></tr></thead>
+          <tbody>${assetRows}
+            <tr class="tot"><td>Total Fixed Capital Investment</td><td class="n">${f(c.gfciTotal)}</td><td class="n">${f(c.eiTotal)}</td></tr>
+          </tbody>
+        </table>
+
+        <div class="ps-sec">3. Estimated Subsidy Benefit</div>
+        <table>
+          <thead><tr><th style="width:52%;">Component</th><th>Benefit % Cap</th><th>Expected Benefit</th></tr></thead>
+          <tbody>
+            <tr><td>Capital Subsidy</td><td class="n">${pct(c.capRate)}</td><td class="n">${f(totCap)}</td></tr>
+            <tr><td>Interest Subsidy @ ${escHtml(+(c.interestCapInput).toFixed(2))}%</td><td class="n">${pct(c.intCapRate)}</td><td class="n">${f(totInt)}</td></tr>
+            <tr><td>Power Tariff</td><td class="n">${pct(c.powerCapRate)}</td><td class="n">${f(totPow)}</td></tr>
+            <tr class="grand"><td>Total Benefit</td><td class="n">${pct(c.overallCap)}</td><td class="n">${f(totAll)}</td></tr>
+            <tr class="sum"><td>Max Benefit under the Policy</td><td class="n" colspan="2">${f(c.maxBenefit)}</td></tr>
+            <tr class="sum"><td>Is Unit able to take maximum Benefit</td><td class="n" colspan="2">${canTakeMax}</td></tr>
+            <tr class="sum"><td>Subsidy Tenor (Yrs)</td><td class="n" colspan="2">${c.tenor}</td></tr>
+            <tr class="sum"><td>Yearly Cap on Incentive (% of Project Cost)</td><td class="n" colspan="2">${pct(c.annualRate)}</td></tr>
+            <tr class="sum"><td>Yearly Cap on Incentive (Amount)</td><td class="n" colspan="2">${f(c.yearlyCap)}</td></tr>
+          </tbody>
+        </table>
+        <div class="ps-note">#: Estimates based on VGIP 2026; actual incentive is subject to Government approval and eligibility.</div>
+
+        <div class="ps-foot"><span>Date: ${dstr}</span></div>
+        <div class="ps-by">Prepared by Banthia Consultancy, Surat</div>
+      </div>`;
+  }
+  let _origTitle = null;
+  let _printKind = 'out';
+  function setPageStyle(landscape){
+    document.getElementById('ps-page-style').textContent = '@page{size:A4 ' + (landscape ? 'landscape' : 'portrait') + ';margin:10mm}';
+  }
+  // Direct PDF download (no print dialog) — renders #print-sheet with html2pdf
+  function savePDF(landscape, baseName){
+    const el = document.getElementById('print-sheet');
+    if(typeof html2pdf === 'undefined'){ alert('PDF library could not be loaded. Please check your internet connection and try again.'); return Promise.resolve(); }
+    const nm = (val('client-name')||'').trim().replace(/[\\/:*?"<>|]+/g,'').trim();
+    const fileName = baseName + (nm ? ' - ' + nm : '') + '.pdf';
+    const clone = el.cloneNode(true);                 // capture a copy so nothing flashes on screen
+    clone.style.width = (landscape ? 1047 : 718) + 'px';
+    clone.classList.add('ps-capture', landscape ? 'ps-landscape' : 'ps-portrait');
+    const opt = {
+      margin: 10, filename: fileName,
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff', scrollX: 0, scrollY: 0 },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: landscape ? 'landscape' : 'portrait' },
+      pagebreak: { mode: ['css', 'legacy'] }
+    };
+    return html2pdf().set(opt).from(clone).save().catch(err => { console.error(err); alert('Could not create the PDF.'); })
+      .then(() => { clone.remove(); });
+  }
+  function printOutput(){
+    buildPrintSheet();
+    return savePDF(false, 'VGIP26 Output');
+  }
+  function buildTLPrintSheet(){
+    openTLCalculation(true);                          // refreshes the hidden tables from the latest inputs (popup stays closed)
+    const c = lastCalc; if(!c) return;
+    const logoEl = document.querySelector('.header-logo img');
+    const logoSrc = logoEl ? logoEl.src : '';
+    const now = new Date();
+    const dstr = String(now.getDate()).padStart(2,'0') + '-' + String(now.getMonth()+1).padStart(2,'0') + '-' + now.getFullYear();
+    const company = (c.clientName || '').trim() || 'Company Name';
+    const items = [...document.querySelectorAll('#tl-summary-grid .tl-summary-card')]
+      .map(cd => [cd.querySelector('small').textContent, cd.querySelector('strong').textContent]);
+    let sumRows = '';
+    for(let i=0;i<items.length;i+=2){
+      const a = items[i], b2 = items[i+1] || ['',''];
+      sumRows += `<tr><td class="k">${escHtml(a[0])}</td><td class="v">${escHtml(a[1])}</td><td class="k">${escHtml(b2[0])}</td><td class="v">${escHtml(b2[1])}</td></tr>`;
+    }
+    const annHead = document.querySelector('.tl-annual-table thead').innerHTML;
+    const annBody = document.getElementById('tl-annual-body').innerHTML;
+    const formula = document.getElementById('tl-formula').innerHTML;
+    document.getElementById('print-sheet').innerHTML = `
+      ${logoSrc ? `<img class="ps-wm" src="${logoSrc}" alt="">` : ''}
+      <div class="ps-body">
+        <div class="ps-title">Term Loan — Complete Backend Calculation</div>
+        <div class="ps-sub"><b>${escHtml(company)}</b>${c.productName ? ' — ' + escHtml(c.productName) : ''}<br>Viksit Gujarat Industrial Policy 2026 (VGIP 26) — ${escHtml(c.unitSize)} · All amounts in ₹ Cr unless stated otherwise</div>
+        <div class="ps-sec">1. Term Loan Summary</div>
+        <table class="ps-sum"><tbody>${sumRows}</tbody></table>
+        <div class="ps-note" style="font-style:normal;">${formula}</div>
+        <div class="ps-sec">2. Year-wise Interest Backend Summary</div>
+        <table class="ps-m"><thead>${annHead}</thead><tbody>${annBody}</tbody></table>
+        <div class="ps-foot"><span>Date: ${dstr}</span></div>
+        <div class="ps-by">Prepared by Banthia Consultancy, Surat</div>
+      </div>`;
+  }
+  function printTL(){
+    buildTLPrintSheet();
+    return savePDF(true, 'VGIP26 Term Loan Backend');
+  }
+  window.addEventListener('beforeprint', () => {
+    if(_printKind === 'out') buildPrintSheet();       // also covers Ctrl+P
+    _origTitle = document.title;
+    const nm = (val('client-name')||'').trim();
+    document.title = (_printKind === 'tl' ? 'VGIP26 Term Loan Backend' : 'VGIP26 Output') + (nm ? ' - ' + nm : '');
+  });
+  window.addEventListener('afterprint', () => {
+    if(_origTitle!==null){ document.title=_origTitle; _origTitle=null; }
+    _printKind = 'out'; setPageStyle(false);
+  });
+
+  function resetForm(){
+    if (!confirm('Reset all fields to blank? This cannot be undone.')) return;
+    document.querySelectorAll('input[type=number]').forEach(i => {
+      if (!['roi','loan-tenure','loan-spread','int-sub-cap','loan-moratorium','cap-util','loan-amount'].includes(i.id)) i.value = 0;
+    });
+    document.getElementById('client-name').value = '';
+    document.getElementById('district').value = '';
+    populateTalukas();
+    document.getElementById('area').value = '';
+    document.getElementById('product-details').value = '';
+    document.getElementById('product-name').value = '';
+    if(typeof pcResetState==='function') pcResetState();
+    document.getElementById('investment-unit').value = 'crores';
+    previousInvestmentUnit = 'crores';
+    document.getElementById('auto-efci').checked = true;
+    document.getElementById('roi').value = 8;
+    document.getElementById('loan-spread').value = 2;
+    document.getElementById('int-sub-cap').value = 7;
+    document.getElementById('loan-tenure').value = 8;
+    document.getElementById('loan-moratorium').value = 12;
+    loanEdited = false;
+    document.getElementById('loan-amount').value = '';
+    document.getElementById('cap-util').value = 75;
+    recalcAll();
+  }
+
+  // ===== Viksit Gujarat Industrial Policy-2026 District / Taluka Classification =====
+  const talukaData = {"Ahmedabad":{"A":["Dholera","DetrojRampura","Dhandhuka"],"B":["Viramgam","Daskroi","Bavla","Dholka","Sanand","Mandal","Ahmedabad City"]},"Amreli":{"A":["Khambha","Dhari","Lilia","Savar Kundla","Babra","Kunkavav Vadia","Lathi"],"B":["Jafrabad","Rajula","Bagasara","Amreli"]},"Anand":{"A":["Tarapur","Anklav","Sojitra"],"B":["Anand","Umreth","Khambhat","Petlad","Borsad"]},"Arvalli":{"A":["Dhansura","Malpur"],"B":["Meghraj","Bayad","Bhiloda","Modasa","Shamalaji(Bhiloda)","Sathamba(Bayad)"]},"Banas Kantha":{"A":["Amirgadh","Danta","Dhanera","Kankrej","Vadgam","Dantiwada","Hadad(Danta)","Ogad(Kankarej)"],"B":["Deesa","Palanpur"]},"Bharuch":{"A":["Netrang"],"B":["Bharuch","Jhagadia","Vagra","Anklesvar","Hansot","Valia","Jambusar","Amod"]},"Bhavnagar":{"A":["Jesar","Umrala","Vallabhipur","Gariadhar","Palitana","Talaja","Ghogha"],"B":["Bhavnagar","Mahuva","Sihor"]},"Botad":{"A":["Ranpur","Gadhada","Barwala","Botad"],"B":[]},"Chhota Udepur":{"A":["Chhota Udepur","Kavant","Nasvadi","Sankheda","Bodeli","Jetpur Pavi","Kadval (Jetpur Pavi)"],"B":[]},"Devbhumi Dwarka":{"A":["Kalyan pur","Bhanvad"],"B":["Khambhalia","Okhamandal"]},"Dahod":{"A":["Dhanpur","Sanjeli","Limkheda","Dahod","Fatepura","Jhalod","Singvad","Garbada","Devgadbaria","Sukhasar (Fatehpura)","Guru Govind Limbdi (Jhalod)"],"B":[]},"Gandhinagar":{"A":[],"B":["Kalol","Dehgam","Gandhinagar","Mansa"]},"Gir Somnath":{"A":["Gir Gadhada","Talala"],"B":["Una","Kodinar","Sutrapada","Veraval"]},"Jamnagar":{"A":["Jodiya"],"B":["Lalpur","Jamnagar","Jamjodhpur","Kalavad","Dhrol"]},"Junagadh":{"A":["Bhesan","Mendarda"],"B":["Junagadh","Junagadh City","Visavadar","MaliaHatina","Mangrol","Vanthali","Manavadar","Keshod"]},"Kachchh":{"A":["Rapar","Nakhatrana","Lakhpat","Mandvi"],"B":["Gandhidham","Abdasa","Bhachau","Bhuj"]},"Kheda":{"A":["Galteshwar","Matar","Vaso","Mahudha"],"B":["Kheda","Nadiad","Mehmedabad","Kathlal","Thasra","Kapadvanj","Fagvel (Kathalal and Kapadvanj)"]},"Mehsana":{"A":["Satlasana","Jotana","Kheralu","Becharaji","Vadnagar"],"B":["Kadi","Mehsana","Unjha","Vijapur","Visnagar"]},"Mahisagar":{"A":["Khanpur","Kadana","Virpur"],"B":["Lunawada","Balasinor","Santrampur","Godhar (Santrampur, Shehra)","Kothamba (Lunavada)"]},"Morbi":{"A":["Maliya"],"B":["Wankaner","Morbi","Tankara","Halvad"]},"Narmada":{"A":["Garudeshwar","Dediapada","Tilakwada","Sagbara","Chikda (Dediapada)"],"B":["Nandod"]},"Navsari":{"A":["Khergam"],"B":["Navsari","Bansda","Chikhli","Jalalpore","Gandevi"]},"Panch Mahals":{"A":["Ghoghamba","Morwa (Hadaf)","Jambughoda","Shehera"],"B":["Halol","Kalol","Godhra"]},"Patan":{"A":["Sarasvati","Santalpur","Shankheshwar","Sami","Radhanpur","Harij"],"B":["Sidhpur","Chanasma","Patan"]},"Porbandar":{"A":["Kutiyana"],"B":["Porbandar","Ranavav"]},"Rajkot":{"A":["Vinchhiya","Jamkandorna"],"B":["Paddhari","Lodhika","Rajkot","Kotda Sangani","Jasdan","Upleta","Dhoraji","Jetpur","Gondal"]},"Sabar Kantha":{"A":["Poshina","Vijaynagar","Khedbramha"],"B":["Talod","Vadali","Idar","Prantij","Himatnagar"]},"Surat":{"A":["Umarpada","Mahuva","Ambika (Mahuva)"],"B":["Mangrol","Kamrej","Palsana","Chorasi","Olpad","Surat City","Mandvi","Bardoli","Areth (Mandvi)"]},"Surendranagar":{"A":["Lakhtar","Chuda","Muli","Sayla","Limbdi","Dasada","Chotila"],"B":["Wadhwan","Thangadh","Dhrangadhra"]},"Tapi":{"A":["Kukarmunda","Uchchhal","Nizar","Dolvan","Songadh","Ukai (Songadha)"],"B":["Vyara","Valod"]},"The Dangs":{"A":["Subir","Waghai","Aahva"],"B":[]},"Vadodara":{"A":["Sinor","Desar"],"B":["Vaghodia","Karjan","Padra","Savli","Vadodara","Dabhoi"]},"Valsad":{"A":["Kaprada","Dharampur","Nanapodha (Kaprada, Vapi, Pardi)"],"B":["Valsad","Pardi","Vapi","Umbergaon"]},"VAVTHARAD":{"A":["Suigam","Vav","Tharad","Deodar","Dharnidhar(Vav)","Rah(Tharad)"],"B":[]}};
+  function populateDistricts(){
+    const d=document.getElementById('district'); if(!d) return;
+    d.innerHTML='<option value="">Select District</option>' + Object.keys(talukaData).map(x=>`<option value="${x}">${x}</option>`).join('');
+  }
+  function populateTalukas(){
+    const d=document.getElementById('district'), a=document.getElementById('area'), t=document.getElementById('taluka');
+    if(!d||!a||!t) return;
+    const data=talukaData[d.value];
+    a.innerHTML='<option value="">Select Taluka</option>';
+    if(!data){ t.value=''; return; }
+    [['A',data.A],['B',data.B]].forEach(([cat,list])=>list.forEach(name=>{
+      const o=document.createElement('option'); o.value=name; o.textContent=name; o.dataset.category=cat; a.appendChild(o);
+    }));
+    t.value='';
+  }
+  function updateTalukaCategory(){
+    const a=document.getElementById('area'), t=document.getElementById('taluka');
+    const o=a && a.options[a.selectedIndex];
+    t.value=o && o.dataset && o.dataset.category ? o.dataset.category : '';
+  }
+  function updateInvestmentLabels(){
+    const unit=val('investment-unit')==='lacs' ? '₹ Lacs' : '₹ Cr';
+    const gh=document.getElementById('gfci-header'), eh=document.getElementById('efci-header');
+    if(gh) gh.textContent='GFCI (Indicative) — '+unit;
+    if(eh) eh.textContent='EFCI — '+unit;
+  }
+  function convertInvestmentUnit(oldUnit,newUnit){
+    if(oldUnit===newUnit) return;
+    const factor = oldUnit==='crores' && newUnit==='lacs' ? 100 : 0.01;
+    document.querySelectorAll('#assets-table .gfci-val, #assets-table .ei-val').forEach(i=>{
+      const n=parseFloat(i.value); if(Number.isFinite(n)) i.value=(n*factor).toFixed(2);
+    });
+  }
+  function syncEfciFromGfci(input){
+    if(!document.getElementById('auto-efci').checked) return;
+    const row=input.closest('tr');
+    const ei=row.querySelector('.ei-val');
+    if(ei) ei.value=input.value;
+  }
+  populateDistricts();
+  document.getElementById('district').addEventListener('change', ()=>{populateTalukas(); recalcAll();});
+  document.getElementById('area').addEventListener('change', ()=>{updateTalukaCategory(); recalcAll();});
+  let previousInvestmentUnit = document.getElementById('investment-unit').value;
+  document.getElementById('investment-unit').addEventListener('change', ()=>{
+    const nextUnit=document.getElementById('investment-unit').value;
+    convertInvestmentUnit(previousInvestmentUnit,nextUnit);
+    previousInvestmentUnit=nextUnit;
+    updateInvestmentLabels(); recalcAll();
+  });
+  document.querySelectorAll('.gfci-val').forEach(i=>i.addEventListener('input',()=>syncEfciFromGfci(i)));
+
+  // Keep special EFCI rules enforced even when the user edits fields directly.
+  document.querySelector('#assets-table tbody').addEventListener('input', (e) => {
+    const row = e.target.closest('tr[data-row]');
+    if(!row) return;
+    if(row.dataset.row === 'Land' || row.dataset.row === 'CPP-Out') {
+      const ei = row.querySelector('.ei-val');
+      if(ei) ei.value = 0;
+    }
+    recalcAll();
+  });
+
+  let otherCounter = 1;
+  document.getElementById('add-other-btn').addEventListener('click', () => {
+    otherCounter += 1;
+    const tr = document.createElement('tr');
+    tr.className = 'other-row';
+    tr.dataset.row = 'Other-' + otherCounter;
+    tr.innerHTML = `
+      <td class="row-label"><input type="text" class="styled-input other-name" value="Other ${otherCounter}" placeholder="Other item"></td>
+      <td><input type="number" class="styled-input gfci-val" value="0" step="0.01"></td>
+      <td><input type="number" class="styled-input ei-val" value="0" step="0.01"></td>`;
+    document.getElementById('other-add-row').before(tr);
+    const gfci = tr.querySelector('.gfci-val');
+    gfci.addEventListener('input', () => syncEfciFromGfci(gfci));
+    recalcAll();
+  });
+
+  // Land and CPP-out EFCI must remain locked/zero; CPP-in remains editable.
+  document.querySelectorAll('#assets-table tr[data-row="Land"] .ei-val, #assets-table tr[data-row="CPP-Out"] .ei-val').forEach(i => {
+    i.readOnly = true;
+    i.value = 0;
+  });
+  updateInvestmentLabels();
+
+  document.addEventListener('input', recalcAll);
+  document.addEventListener('change', recalcAll);
+  recalcAll();
+
+  // ===== Floating background particles =====
+  (function() {
+    const container = document.getElementById('bgParticles');
+    for (let i = 0; i < 18; i++) {
+      const p = document.createElement('div');
+      p.className = 'particle';
+      const size = Math.random() * 60 + 20;
+      p.style.cssText = `width:${size}px;height:${size}px;left:${Math.random()*100}%;animation-duration:${Math.random()*15+10}s;animation-delay:${Math.random()*10}s;`;
+      container.appendChild(p);
+    }
+  })();
+</script>
+
+</body>
+</html>
